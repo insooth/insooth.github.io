@@ -53,30 +53,73 @@ optional<resource_id> make_resource(resource_name s)
 {
   using T = resource_traits;
 
-  // checks system state
+  // checks system state; log error and `return {};` if not in wrong state
 
   if (true == s.empty())
-  { /* ... */ }
+  { /* log error and `return {};` */ }
 
   if ('\0' != s.back())
-  { /* ... */ }
+  { /* log error and `return {};` */ }
 
   if (s.size() > T::max_length)
-  { /* ... */ }
+  { /* log error and `return {};` */ }
 
-  if (string_view::npos == s.find_first_not_of(T::allowed_chars(), 0, s.size()))
-  { /* ... */ }
+  if (string_view::npos != s.find_first_not_of(T::allowed_chars()))
+  { /* log error and `return {};` */ }
 
   // do the stuff we were requested to do
-  // ...
+  // do the real work here
 
-  // check the side effects
+  // check the side effects; log errors and return if needed
 
   return (true == success) ? {id} : {};
 }
 ```
-Validation and later error handling takes most of the function's body space. What we can do about that?
+
+Validation and later error handling with (possible) input data correction takes most of the function's body space. What we can do about that?
 
 ## Split it out
 
+The idea of division of frontend and backend is quite old. Let's approach that idea. Frontend is supposed to be user-friendly interface, so that it may help the user in cases of misuse. Backend is more restrictive and stigmates user in case of misuse. We can apply that blessed split to our interface:
+
+```c++
+
+namespace backend
+{
+
+optional<resource_id> make_resource(resource_name s)
+{
+  // assert on system state
+  assert(false == s.empty());
+  assert('\0' == s.back());
+  assert(s.size() <= resource_traits::max_length);
+  assert(string_view::npos == s.find_first_not_of(resource_traits::allowed_chars()));
+  
+  // do the real work here
+
+  // check the side effects with assert
+}
+
+}
+
+optional<resource_id> make_resource(resource_name s)
+{
+  // -- see implementation in previous the listing
+
+  // do the stuff we were requested to do
+  const auto result = backend::make_resource(s);
+
+  // check the side effects; log errors and return if needed
+
+  return result;
+}
+```
+
+We have split the original implementation into frontend part, that does all the required input validation, serves the user with the log messages, assures pre/post conditions in user-friendly way; and backend that requires correct input data and system state.
+
+Backend just fails fast in case on an erroneous input or system state, and if it happens, frontend has failed first. Having this, backend can operate on its maximum performance and is _unsafe_ if [`NDEBUG`](http://en.cppreference.com/w/cpp/error/assert) is set.
+
+There is no requirement of one-to-one relation between frontend interface functions and backend functions, i.e. single interface function can compose and be bind results of multiple backend functions. This leads to easily reconfigurable frontends, and in turn, flexible interfaces.
+
+Namespace `backend` is typically named `impl` in many C++ libraries. This technique may recall [PIMPL](https://en.wikibooks.org/wiki/C%2B%2B_Programming/Idioms#Pointer_To_Implementation_.28pImpl.29) idiom.
 
