@@ -123,7 +123,8 @@ There is no requirement of one-to-one relation between frontend interface functi
 
 Namespace `backend` is typically named `impl` in many C++ libraries. This technique may recall [PIMPL](https://en.wikibooks.org/wiki/C%2B%2B_Programming/Idioms#Pointer_To_Implementation_.28pImpl.29) idiom.
 
-
+#### About
 
 May 6, 2016
+
 Krzysztof Ostrowski
