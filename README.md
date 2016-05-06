@@ -2,4 +2,4 @@
 
 Computer science only (in English).
 
-For non-CS content, please visit http://insooth.i365.pl/insooth (in Polish).
+See main page in browser: http://insooth.github.io/index.html
