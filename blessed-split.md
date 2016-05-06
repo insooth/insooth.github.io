@@ -121,7 +121,7 @@ Backend just fails fast in case of an erroneous input or system state, and if it
 
 There is no requirement of one-to-one relation between frontend interface functions and backend functions, i.e. single interface function can compose and bind results of multiple backend functions. This leads to easily reconfigurable frontends, and in turn, flexible interfaces.
 
-Type-rich designs that utilise blessed split tend to be easier to use and maintain. Quality is enforced by use (or even _overuse_) of types during compilation time, and with contracts during runtime. Testing of frontend is straight-forward, backend requires a little bit different techniques. Due to fact that it expects valid state and input, which implies that execution will not move forward otherwise, we can verify the underlying algorithm only. Configurable assertions from [BDE](https://github.com/bloomberg/bde/blob/master/groups/bsl/bsls/bsls_assert.h) may help in testing the assertions itself.
+Type-rich designs that utilise blessed split tend to be easier to use and maintain. Quality is enforced during compilation time by use (or even _overuse_) of types, and by contracts during runtime. Testing of frontend is straight-forward, backend requires special approach to tests. Due to fact that it expects valid state and input, which implies that execution will not move forward otherwise, we can verify the underlying algorithm only. Configurable assertions from [BDE](https://github.com/bloomberg/bde/blob/master/groups/bsl/bsls/bsls_assert.h) may help in testing the assertions itself.
 
 #### About this document
 
