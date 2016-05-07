@@ -44,7 +44,7 @@ We left validation of `Point`'s internal data up to type constructors. Note that
 
 ## Function return value
 
-Function's return value type defines _co-domain_ that includes all the possible values of return type. Function `distance` returns all the possible `unsigned` values, and value `0` is marked as magic to indicate invalid input or other errors. That is a common technique in C programming to return magic value indicating failure. Unfortunately, `distance` does it wrong.
+Function's return type defines _co-domain_ that includes all the possible values of return type. Function `distance` returns all the possible `unsigned` values, and value `0` is marked as magic to indicate invalid input or other errors. That is a common technique in C programming to return magic value indicating failure. Unfortunately, `distance` does it wrong.
 
 Consider output of `distance(p, p)`, where `p` is an object of `Point`. Distance between two same points shall be zero metres, and zero indicates failure. We found severe bug: in certain cases correct input produces correct output that is indistinguishable from failure. Due to fact it happens only _in certain cases_ during execution, it makes debgging real challenge.
 
