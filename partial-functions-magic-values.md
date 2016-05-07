@@ -13,25 +13,74 @@ Ideally, type encodes the set of possible values of it. For example, having type
 
 ## Function arguments
 
-Function _domain_ defines all the possible arguments' values function can be called with. Function that works properly for all the values from its domain is a _total_ function. Unfortunately, most of the functions work correctly only for the selected values from the domain, they are _partial_.
+Function's _domain_ defines all the possible arguments' values function can be called with. Function that works properly for all the values from its domain is a _total_ function. Unfortunately, most of the functions work correctly only for the selected values from the domain, they are _partial_.
 
-For example, `void log(enum level, char*)` in C language is actually `void log(int, char*)` so it can be called with meaningless log level and pointer to hell, causing buffer overflows, etc. C++ adds level of type safety, so at least log level (without explicit cast of rubbish value) will be correct. Going further, we can substitute type of the second argument with `string_view` and prevent from buffer overflows. That is still too little, [more work is required](https://github.com/insooth/insooth.github.io/blob/master/blessed-split.md).
+For example, `void log(enum level, char*)` in C language is actually `void log(int, char*)` so it can be called with meaningless log level and pointer to hell, causing buffer overflows, etc. C++ adds level of type safety, so at least log level (without explicit cast of rubbish value) will be correct. Going further, we can substitute type of the second argument with `string_view` and prevent from buffer overflows. That is still too little, more work is required.
 
 Let's consider following function that calculates distance between two points on the map:
 
 ```c++
-/** Returns distance in meters if both points are correct, otherwise 0. */
 unsigned distance(Point, Point);
 ```
 
-Type `Point` is a tuple `(lat, lon, alt)` with some extra operations.
+Type `Point` is a tuple of three `double` elements `(lat, lon, alt)` and some extra operations. Object of that type can be default constructed, constructed by specifying all or selected tuple elements. That means, its objects are not always well-formed, thus limited number of operations can be applied to them. Since `Point` is used in multiple ways by others its design cannot be changed.
 
-TBD
+Given that, `distance` works only for selected values from the whole domain of possible `Point` objects, it is partial function. By doing patten matching on the arguments we can verify and reject incorrect input, in C++:
+
+```c++
+unsigned distance(Point src, Point dst)
+{
+  const bool can_proceed = /* `src` and `dst` of (lat, lon, _) */
+       (true == src.has_lat())
+    && (true == src.has_lon())
+    && (true == dst.has_lat())
+    && (true == dst.has_lon());
+
+  return (true == can_proceed) ? /* calculated distance */ : 0;
+}
+```
+
+We left validation of `Point`'s internal data up to type constructors. Note that we do not check third `Point`'s internal tuple value `alt` because it does not play a role in the distance calculation algorithm. Augmented `distance` always verifies input arguments during runtime.
 
 ## Function return value
 
-TBD
+Function's return value type defines _co-domain_ that includes all the possible values of return type. Function `distance` returns all the possible `unsigned` values, and value `0` is marked as magic to indicate invalid input or other errors. That is a common technique in C programming to return magic value indicating failure. Unfortunately, `distance` does it wrong.
 
+Consider output of `distance(p, p)`, where `p` is an object of `Point`. Distance between two same points shall be zero metres, and zero indicates failure. We found severe bug: in certain cases correct input produces correct output that is indistinguishable from failure. Due to fact it happens only _in certain cases_ during execution, it makes debgging real challenge.
+
+How to fix it? One option is to change the return type to [`optional`](http://en.cppreference.com/w/cpp/experimental/optional) or its hand-made counterpart `pair<bool, unsigned>` that contains meaningful value in `second` if `first` is `true`. Changing from `unsigned` to signed `int` to return `-1` in case of an error seems promising, but it widens the co-domain and shrinks collection of meaningful values which is not good news. Depending on context in which `distance` is used, warnings about mixing signed and unsigned may arise.
+
+We can apply defensive programming through [blessed split](https://github.com/insooth/insooth.github.io/blob/master/blessed-split.md) and explicitly shift validation to the caller thus making `distance` always succeeding:
+
+```c++
+/**
+ * Returns distance in metres between @c src and @c dst points.
+ *
+ * @pre @c src has @e lon and @e lat
+ * @pre @c dst has @e lon and @e lat
+ */
+unsigned distance(Point src, Point dst)
+{
+  assert(true == src.has_lat());
+  assert(true == src.has_lon());
+  assert(true == dst.has_lat());
+  assert(true == dst.has_lon());
+
+  return /* calculated distance */;
+}
+```
+
+Another case is that we calculate using floating points and return integral value. That leads to situation where infinite number of different inputs lead to the same output. With points on the map described by floating coordinates such behaviour constitutes a problem.
+
+## Express precisely
+
+Either we move into `optional<unsigned>` or make `distance` always succeeds, we will fix the bug and never return the magic values anymore. One topic is left tough. We pointed out in the documentation that returned value represents distance _in metres_. Let's express that in the type using [Boost.Units](http://www.boost.org/doc/libs/1_60_0/doc/html/boost_units.html):
+
+```c++
+boost::units::si::length distance(Point, Point);
+```
+
+This may be seens as a breaking change to the interface, but it worth to be done. Having it applied, we explicitly deal with _metres_, there is no longer meaningless `unsigned`, so that we cannot simply shoot in the foot by combining units. Wrong combinations won't compile. That's huge step toward better designs.
 
 #### About this document
 
