@@ -17,7 +17,7 @@ Function _domain_ defines all the possible arguments' values function can be cal
 
 For example, `void log(enum level, char*)` in C language is actually `void log(int, char*)` so it can be called with meaningless log level and pointer to hell, causing buffer overflows, etc. C++ adds level of type safety, so at least log level (without explicit cast of rubbish value) will be correct. Going further, we can substitute type of the second argument with `string_view` and prevent from buffer overflows. That is still too little, [more work is required](https://github.com/insooth/insooth.github.io/blob/master/blessed-split.md).
 
-Let's consider following function that calculates distance in meters between two points on the map, or `0` in case of a failure:
+Let's consider following function that calculates distance between two points on the map:
 
 ```c++
 /** Returns distance in meters if both points are correct, otherwise 0. */
