@@ -15,13 +15,13 @@ Ideally, type encodes the set of possible values of it. For example, having type
 
 Function _domain_ defines all the possible arguments' values function can be called with. Function that works properly for all the values from its domain is a _total_ function. Unfortunately, most of the functions work correctly only for the selected values from the domain, they are _partial_.
 
-For example, `void log(enum level, char*)` in C language is (desugared) actually `void log(int, char*)` so it can be called with meaningless log level and pointer to hell, causing buffer overflows, etc. C++ adds level of type safety, so at least log level (without explicit cast of rubbish value) will be correct. Going further, we can substitute type of the second argument with `string_view` and prevent from buffer overflows. That is still too little, [more work is required](https://github.com/insooth/insooth.github.io/blob/master/blessed-split.md).
+For example, `void log(enum level, char*)` in C language is actually `void log(int, char*)` so it can be called with meaningless log level and pointer to hell, causing buffer overflows, etc. C++ adds level of type safety, so at least log level (without explicit cast of rubbish value) will be correct. Going further, we can substitute type of the second argument with `string_view` and prevent from buffer overflows. That is still too little, [more work is required](https://github.com/insooth/insooth.github.io/blob/master/blessed-split.md).
 
 Let's consider following function that calculates distance in meters between two points on the map, or `0` in case of a failure:
 
 ```c++
 /** Returns distance in meters if both points are correct, otherwise 0. */
-unsigned distance(Point s, Point d);
+unsigned distance(Point, Point);
 ```
 
 Type `Point` is a tuple `(lat, lon, alt)` with some extra operations.
