@@ -23,9 +23,9 @@ Let's consider following function that calculates distance between two points on
 unsigned distance(Point, Point);
 ```
 
-Type `Point` is a tuple of three `double` elements `(lat, lon, alt)` and some extra operations. Object of that type can be default constructed, constructed by specifying all or selected tuple elements. That means, its objects are not always well-formed, thus limited number of operations can be applied to them. Since `Point` is used in multiple ways by others its design cannot be changed.
+Type `Point` is a tuple of three `double` elements `(lat, lon, alt)` and some extra operations. Objects of that type can be default constructed, constructed by specifying all or selected tuple elements. That means, its objects are not always well-formed, thus limited number of operations can be applied to them. Since `Point` type is used in multiple ways by other parts of the system its design cannot be changed.
 
-Given that, `distance` works only for selected values from the whole domain of possible `Point` objects, it is partial function. By doing patten matching on the arguments we can verify and reject incorrect input, in C++:
+Given that, `distance` works only for selected values from the whole domain of possible `Point` objects, it is a partial function. By doing patten matching on the arguments we can verify and reject incorrect input, in C++:
 
 ```c++
 unsigned distance(Point src, Point dst)
@@ -40,15 +40,15 @@ unsigned distance(Point src, Point dst)
 }
 ```
 
-We left validation of `Point`'s internal data up to type constructors. Note that we do not check third `Point`'s internal tuple value `alt` because it does not play a role in the distance calculation algorithm. Augmented `distance` always verifies input arguments during runtime.
+We left validation of `Point`'s internal data up to the type constructors. Note that we do not check third `Point`'s internal tuple value `alt` because it does not play a role in the distance calculation algorithm. Augmented `distance` always verifies input arguments during runtime.
 
 ## Function return value
 
-Function's return type defines _co-domain_ that includes all the possible values of return type. Function `distance` returns all the possible `unsigned` values, and value `0` is marked as magic to indicate invalid input or other errors. That is a common technique in C programming to return magic value indicating failure. Unfortunately, `distance` does it wrong.
+Function's return type defines _co-domain_ that includes all the possible values of the return type. Function `distance` returns all the possible `unsigned` values, and value `0` is marked as magic to indicate invalid input or other errors. That is a common technique in C programming to return magic value indicating failure. Unfortunately, `distance` does it wrong.
 
-Consider output of `distance(p, p)`, where `p` is an object of `Point`. Distance between two same points shall be zero metres, and zero indicates failure. We found severe bug: in certain cases correct input produces correct output that is indistinguishable from failure. Due to fact it happens only _in certain cases_ during execution, it makes debgging real challenge.
+Consider output of `distance(p, p)`, where `p` is an object of type `Point`. Distance between two same points shall be zero metres, while zero indicates failure. We found severe bug: in certain cases correct input produces correct output that is indistinguishable from failure. Due to fact it happens only _in certain cases_ during execution, it makes debgging real challenge.
 
-How to fix it? One option is to change the return type to [`optional`](http://en.cppreference.com/w/cpp/experimental/optional) or its hand-made counterpart `pair<bool, unsigned>` that contains meaningful value in `second` if `first` is `true`. Changing from `unsigned` to signed `int` to return `-1` in case of an error seems promising, but it widens the co-domain and shrinks collection of meaningful values which is not good news. Depending on context in which `distance` is used, warnings about mixing signed and unsigned may arise.
+How to fix it? One option is to change the return type to [`optional`](http://en.cppreference.com/w/cpp/experimental/optional) or its hand-made counterpart `pair<bool, unsigned>` that contains meaningful value in `second` if `first` is `true`. Changing from `unsigned` to signed `int` and returning `-1` in case of an error seems promising, but it widens the co-domain and shrinks collection of meaningful values which is not good news. Depending on context in which `distance` is used, warnings about mixing signed and unsigned may arise.
 
 We can apply defensive programming through [blessed split](https://github.com/insooth/insooth.github.io/blob/master/blessed-split.md) and explicitly shift validation to the caller thus making `distance` always succeeding:
 
@@ -70,7 +70,7 @@ unsigned distance(Point src, Point dst)
 }
 ```
 
-Another case is that we calculate using floating points and return integral value. That leads to situation where infinite number of different inputs lead to the same output. With points on the map described by floating coordinates such behaviour constitutes a problem.
+Another case is that we calculate using floating points and return an integral value. That leads to situation where infinite number of different inputs lead to the same output. With points on the map described by floating point coordinates such behaviour constitutes a problem.
 
 ## Express precisely
 
@@ -80,7 +80,7 @@ Either we move into `optional<unsigned>` or make `distance` always succeeds, we 
 boost::units::si::length distance(Point, Point);
 ```
 
-This may be seens as a breaking change to the interface, but it worth to be done. Having it applied, we explicitly deal with _metres_, there is no longer meaningless `unsigned`, so that we cannot simply shoot in the foot by combining units. Wrong combinations won't compile. That's huge step toward better designs.
+This may be seen as a breaking change to the interface, but it is worth to be applied. Having it applied, we explicitly deal with _metres_, there is no longer meaningless `unsigned`, so that we cannot simply shoot in the foot by combining units. Wrong combinations won't compile. That's huge step toward better designs.
 
 #### About this document
 
