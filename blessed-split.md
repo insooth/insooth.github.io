@@ -1,7 +1,7 @@
 
 # The Blessed Split
 
-Well design system is built up from multiple layers, where each layer may be complex piece of software. Data is fed into such a system and it flows from bottom layers up to the upper ones being transformed at each step. This is how telecommunication stacks work, and it usually involves state machines behind the scenes. If `fₙ` represents action performed by `n`th layer and `x` is the initial input data, then having layers from `0` (bottom) to `n` (top), layered system can be optimistically simplified to `fₙ(f₁(f₀ x)...)` which is just a function composition of layers' actions with input data. That's quite simple, but may be too simple in some cases.
+Well designed system is built up from multiple layers, where each layer may be complex piece of software. Data is fed into such a system and it flows from bottom layers up to the upper ones being transformed at each step. This is how telecommunication stacks work, and it usually involves state machines behind the scenes. If `fₙ` represents action performed by `n`th layer and `x` is the initial input data, then having layers from `0` (bottom) to `n` (top), layered system can be optimistically simplified to `fₙ(f₁(f₀ x)...)` which is just a function composition of layers' actions with input data. That's quite simple, but may be too simple in some cases.
 
 Fortunately, this text is not going to be about monads, in particular `Maybe` or `Either`, and nor about system design patterns. We will look into a single layer of the system to find out how to make it _safe_ without sacrificing its performance.
 
