@@ -1,7 +1,7 @@
 
 # Better way to generate C++ source code
 
-One of the points on list of [The Eight Defensive Programmer Strategies](http://c.learncodethehardway.org/book/ex27.html) is
+One of the points on list of [The Eight Defensive Programmer Strategies](http://c.learncodethehardway.org/book/ex27.html "Learn C The Hard Way. Exercise 27: Creative And Defensive Programming") is
 
 > Automate everything, especially testing.
 
