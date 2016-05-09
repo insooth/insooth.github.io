@@ -74,7 +74,7 @@ Another case is that we calculate using floating points and return an integral v
 
 ## Express precisely
 
-Either we move into `optional<unsigned>` or make `distance` always succeeds, we will fix the bug and never return the magic values anymore. One topic is left tough. We pointed out in the documentation that returned value represents distance _in metres_. Let's express that in the type using [Boost.Units](http://www.boost.org/doc/libs/1_60_0/doc/html/boost_units.html):
+Either we move into `optional<unsigned>` or make `distance` always succeeding, we will fix the bug and never return the magic values anymore. One topic is left tough. We pointed out in the documentation that returned value represents distance _in metres_. Let's express that in the type using [Boost.Units](http://www.boost.org/doc/libs/1_60_0/doc/html/boost_units.html):
 
 ```c++
 boost::units::si::length distance(Point, Point);
