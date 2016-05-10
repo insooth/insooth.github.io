@@ -34,7 +34,7 @@ Special care should be taken if processing really huge files. Probably the most 
 
 ## Output representation
 
-The result of the stage `(3)` is a data structure (usually a associative, `dict` in Python or `HASH` in Perl) that contains all the data required to generate output. Since we want to generate C++ source code, our output format is a C++ header (most likely) or source code.
+The result of the stage `(3)` is a data structure (usually an associative, `dict` in Python or `HASH` in Perl) that contains all the data required to generate output. Since we want to generate C++ source code, our output format is a C++ header (most likely) or source code.
 
 Extremely important is never to mix generator code with the output format (here C++ code). Such spaghetti of scripting language mixed with strings representing destination format, unclear concatenations and accidental patching/fixing by nested `if` blocks is a sign of bad design or lack of design.
 
