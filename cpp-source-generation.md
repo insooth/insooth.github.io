@@ -40,13 +40,31 @@ The result of the stage `(3)` on _Figure 1_ is a data structure (usually an asso
 
 Extremely important is never to mix generator code with the output format (here C++ code). Such spaghetti of scripting language mixed with strings representing destination format, unclear concatenations and accidental patching/fixing by nested `if` blocks is a sign of bad design or lack of design at all.
 
-How to never try spaghetti again? Apply MVC design pattern.
+How to never try spaghetti again? Apply [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller "Model–view–controller") design pattern.
 
 # Less logic
+
+MVC defines split of responsibilities and a way to compose the split parts. _M_ stands for _model_, in our case it is an input data. _C_ is a _controller_, so the generator script itself. _V_ is for _view_, the way we represent processed data (on _Figure 1_ it is output of stage `(3)`). Use of MVC is ubiquitous in the web development and GUI frameworks.
+
+In the web development, view is typically a _template_ which is a text file where certain strings have special meaning. That special meaning is for _template engine_ which loads templates, receives structured data from the user, and then substitutes those strings with data from user. Read more about that [here](https://en.wikipedia.org/wiki/Web_template_system "Web template system").
+
+We shall look for logic-less template engines, that means there shall be no or almost no control statements. Input data updates are strictly forbidden. Maximum allowed logic inside a template should be `for-each` and simple boolean tests, all the data must be prepared by the generator.
+
+Python offers widespread and easy-to-learn portable logic-less template engine called [Mustache](https://mustache.github.io/ "{{mustache}} - Logic-less templates."). It has built-in support for [YAML formatted data](https://mustache.github.io/mustache.1.html "mustache - Mustache processor") and works flawlessly unless you forgot to [unescape a variable](https://mustache.github.io/mustache.5.html#Variables). Perl users should have a look at the full-blown  [Text::Template](http://search.cpan.org/~mjd/Text-Template-1.46/lib/Text/Template.pm "Text::Template - Expand template text with embedded Perl") engine.
+
+The template itself is a C++ code with extra syntax required by a template engine. It is strongly recommended to put generated code into dedicated namespace, like `generated`, and let the user know that it is generated code. Typically header like the following is usually inserted to ease maintenance (text in `<>` is prepared by generator and filled in by engine):
+
+
+    This code is generated. DO NOT edit manually.
+    <generator-script-name> <generator-script-version> <generation-timestamp> <input-file-name>
+
+It is good option to auto-format generated code with [clang-format](http://clang.llvm.org/docs/ClangFormat.html "ClangFormat") or similar tool.
 
 # Verification
 
 # Provide support
+
+# Integrate
 
 #### About this document
 
