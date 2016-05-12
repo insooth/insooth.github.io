@@ -66,7 +66,7 @@ We have reached stage `(5)` &mdash; we are done. Really? Does it compile?
 
 At stage `(3)` we shall evaluate all the required assertions against the interpreted input that must be satisfied to guarantee correctness of the result data structure. That may be not sufficient. We must never assume something will work out-of-the-box. We shall check.
 
-The easiest way is to compile (or interpret) the generated data and look for errors. With output in C++ format, we can use  compiler from command-line, or write simple CMake script to do that for us.
+The easiest way is to compile (or interpret) the generated data and look for errors. With output in C++ format, we can use  compiler from command-line, or write simple CMake script to do that for us. Verification process must be done automatically by the script before writing generated files to disk.
 
 # Provide support
 
