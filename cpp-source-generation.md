@@ -46,7 +46,7 @@ How to never try spaghetti again? Apply [MVC](https://en.wikipedia.org/wiki/Mode
 
 MVC defines a split of responsibilities and a way to compose the split parts. _M_ stands for _model_, in our case it is an input data. _C_ is a _controller_, so the generator script itself. _V_ is for _view_, the way we represent processed data (on _Figure 1_ it is output of stage `(3)`). Use of MVC is ubiquitous in the web development and GUI frameworks.
 
-In the web development, view is typically a _template_ which is a text file where certain strings have special meaning. That special meaning is for _template engine_ which loads templates, receives structured data from the user, and then substitutes those strings accordint to that data. Read more about that [here](https://en.wikipedia.org/wiki/Web_template_system "Web template system").
+In the web development, view is typically a _template_ which is a text file where certain strings have special meaning. That special meaning is for _template engine_ which loads templates, receives structured data from the user, and then substitutes those strings according to the received data. Read more about that [here](https://en.wikipedia.org/wiki/Web_template_system "Web template system").
 
 We shall look for logic-less template engines, that means there shall be no or almost no control statements present in the template. Input data updates are strictly forbidden. Maximum allowed logic inside a template should be `for-each` and simple boolean tests, all the data must be prepared by the generator.
 
