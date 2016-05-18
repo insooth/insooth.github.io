@@ -38,7 +38,7 @@ Special care should be taken if processing really huge files. Probably the most 
 
 The result of the stage `(3)` on _Figure 1_ is a data structure (usually an associative, `dict` in Python or `HASH` in Perl) that contains all the data required to generate output. Since we want to generate C++ source code, our output format is a C++ code in a header (most likely) or source file.
 
-Extremely important is never to mix generator code with the output format (here C++ code). Such spaghetti of scripting language mixed with strings representing destination format, unclear concatenations and accidental patching/fixing by nested `if` blocks is a sign of bad design or lack of design at all.
+Extremely important is never to mix generator code with the output format (here C++ code). Such spaghetti of scripting language mixed with strings representing destination format, unclear concatenations and accidental patching/fixing with nested `if` blocks is a sign of bad design or lack of design at all.
 
 How to never try spaghetti again? Apply [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller "Model–view–controller") design pattern.
 
