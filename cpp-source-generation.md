@@ -70,7 +70,7 @@ The easiest way is to compile (or interpret) the generated data and look for err
 
 # Provide support
 
-Generator script shall provide exhaustive help and options. Options must include result files location. Generator shall never automatically ovewrite already existing files, such behaviour shall be activated through explicit option, and attempt to overwrite explained to the user. Do not reinvent the wheel, use [Getopt::Long](http://perldoc.perl.org/Getopt/Long.html "Getopt::Long") in Perl, and [argparse](https://docs.python.org/2/howto/argparse.html "argparse") in Python to handle the command-line options.
+Generator script shall provide exhaustive help and options. Options must include result files location. Generator shall never automatically ovewrite already existing files, such behaviour shall be activated explicitly through an option, and attempt to overwrite explained to the user. Do not reinvent the wheel, use [Getopt::Long](http://perldoc.perl.org/Getopt/Long.html "Getopt::Long") in Perl, and [argparse](https://docs.python.org/2/howto/argparse.html "argparse") in Python to handle the command-line options.
 
 We shall gave an opportunity to succesfully run the script with one or none command-line argument, i.e. path to the input file (or piped stream). Remaining options (like location of the text templates and output files, etc.) should be deduced from current location, default have to be hard-coded. Presence of all the required text templates must be checked. All constraints on the input data must be verified, script shall abort with a message if one of them is not satisified.
 
