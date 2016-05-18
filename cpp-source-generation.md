@@ -52,7 +52,7 @@ We shall look for logic-less template engines, that means there shall be no or a
 
 Python offers widespread and easy-to-learn portable logic-less template engine called [Mustache](https://mustache.github.io/ "{{mustache}} - Logic-less templates."). It has built-in support for [YAML formatted data](https://mustache.github.io/mustache.1.html "mustache - Mustache processor") and works flawlessly unless you forgot to [unescape a variable](https://mustache.github.io/mustache.5.html#Variables). Perl users should have a look at the full-blown  [Text::Template](http://search.cpan.org/~mjd/Text-Template-1.46/lib/Text/Template.pm "Text::Template - Expand template text with embedded Perl") engine.
 
-The template itself is a C++ code with extra syntax required by the template engine. It is strongly recommended to put generated code into dedicated namespace, like `generated`, and let the user know that plays with the generated code. Typically an opening lines, like the following ones, are inserted (text in `<>` is prepared by generator and filled in by engine):
+The template itself is a C++ code with extra syntax required by the template engine. It is strongly recommended to put generated code into dedicated namespace, like `generated`, and let the user know that he/she plays with the generated code. Typically an opening lines, like the following ones, are inserted (text in `<>` is prepared by generator and filled in by engine):
 
 
     This file is generated. DO NOT edit manually.
