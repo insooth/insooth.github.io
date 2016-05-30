@@ -40,7 +40,7 @@ result_type deserialise(T& into, const std::vector<json_node_type>& from)
 }
 ```
 
-We have introduces non-explicit requirement that must be satisified by user, that's definitely huge drawback of the above approach.
+We have introduced non-explicit requirement that must be satisified by user, that's definitely huge drawback of the above approach.
 
 
 ## Extend, do not change
@@ -56,6 +56,8 @@ How to achieve that?
 ### What is a list?
 
 Functional programming languages usually define abstract data structures recursively. For instance, list `[T]` is a value of type `T` prepended (_consed_) to a list of `[T]` which can be an empty list, binary tree is an empty tree, or a node and two trees (left and right). The length of the list is defined recursively too &mdash; it is 0 for empty list, and 1 + length of the list without first element (thus 1 there).
+
+### Extending
 
 Let's creatively apply our knowledge to `json_node_type` and embed _tail_ into `json_node_type`:
 
