@@ -158,6 +158,69 @@ We have enabled forward traversal and kept the `json_node_type` type name unchan
 
 Presented design is ready for extensions &ndash; we can form multi-level collections like list of lists, meet requirements of [RadomAccessIterator](http://en.cppreference.com/w/cpp/concept/RandomAccessIterator "C++ concepts: RandomAccessIterator"), etc. easily.
 
+### Emulating emptiness
+
+We want to express empty list, that is `[]` as well, how to achieve that if designed list always contains at least one element? We define conditions in which never-empty list can be regarded as an empty one.
+
+First insight is that we can add a boolean value `is_empty` and accessor `as_empty(bool)` that will toggle it. To express that in the code:
+
+```c++
+class json_node_type
+{
+ public: /* ctors, etc. */
+ 
+ void as_empty(bool toggle) { is_empty = toggle; }
+ 
+ bool empty() const noexcept { return is_empty; }
+ size_type size() const noexcept { return empty() ? 0 : (1 + tail.size()); }
+ 
+ private: /* data, etc. */
+ 
+    tail_type tail;
+    bool      is_empty;
+};
+```
+
+Second insight relates to the sensitive data carried by `json_node_type` itself (like `std::string data`). If the list is empty, its head shall contain no data at all, so that we can check for that:
+
+```c++
+class json_node_type
+{
+ public: /* ctors, etc. */
+
+ bool empty() const noexcept { return data ? true : false; }
+
+ private: /* data, etc. */
+    std::optional<std::string> data;
+};
+```
+
+### Resizing
+
+As we noted above, `resize(size_type)` changes the size of the `tail`. To make resizing reliable and to take into account we have never-empty sequence, we will adjust the passed `n` a little bit:
+
+```c++
+class json_node_type
+{
+ public: /* ctors, etc. */
+
+    void resize(size_type n) { if (n > 1) tail.resize(n - 1); }
+
+ private: /* data, etc. */
+ 
+    tail_type tail;
+};
+```
+
+With the above change, we resize the whole sequence, including its head, not only the tail. That makes following behaves as expected:
+
+```c++
+void foo(const std::vector<T>& v)
+{
+    json_node_type n;
+    n.resize(v.size());
+}
+```
 
 #### About this document
 
