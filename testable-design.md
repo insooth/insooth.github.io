@@ -20,7 +20,7 @@ Function that returns ``void`` gives little possibilities to check whether it su
 Function's return value shall be informational. That means, if we transform value of type `T` into `U` we design function from `T` into `U` rather than from `T` into `E` or `void`. This is correct:
 
 ```c++
-T convert(U&& u);
+T convert(U&& u);    // or:     auto convert(U&& u) -> T;
 ```
 
 because can be readed easily as _convert U into T_. Note that function names that encode types, or are not simple on-word verbs, lead to unreadable API designs. For instance this is not the best choice:
