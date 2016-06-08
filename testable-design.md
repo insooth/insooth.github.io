@@ -23,7 +23,7 @@ Function's return value shall be informational. That means, if we transform valu
 T convert(U&& u);    // or:     auto convert(U&& u) -> T;
 ```
 
-because can be readed easily as _convert U into T_. Note that function names that encode types, or are not simple on-word verbs, lead to unreadable API designs. For instance this is not the best choice:
+because can be readed easily as _convert U into T_. Note that function names that encode types, or are not simple one-word verbs, lead to unreadable API designs. For instance this is not the best choice:
 
 ```c++
 T from_t_into_u(U&& u);
