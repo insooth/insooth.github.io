@@ -70,8 +70,7 @@ where (`E` is error type, `N` is internal C++ representation of JSON structure, 
 
 ```c++
 either<E, std::string> stringify(either<E, N>);
-either<E, N> join(either<E, N>);
-either<E, N> join(either<E, N>, either<E, N>);
+either<E, N> join(N, either<E, N>);
 either<E, N> serialize(V);
 ```
 The above boils down to the programming principles: single responsibility and composability. Single responsibility makes software easier to understand thus easier to test.
