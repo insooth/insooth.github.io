@@ -29,7 +29,7 @@ because can be readed easily as _convert U into T_. Note that function names tha
 T from_t_into_u(U&& u);
 ```
 
-because we already know from the function signature from _what_ to _what_ is it, but we still don't know what it actually does.
+because we already know from the function signature _from what to what_ it is, but we still don't know what it actually does.
 
 What about input arguments? Simple answer is: almost never. For example, this function converts passed `u` into `t` where `t` is modified in place and returns an status of type `E` indicating range of possible errors or success (like `enum class` or simple `bool` value):
 
