@@ -47,7 +47,7 @@ There is a drawback of the above solution: `T` must model [`DefaultConstructible
 std::pair<E, T> convert(U&& u, T&& t = T{});
 ```
 
-that takes moved-in-`convert` value `t` (which requires `T` to model [`CopyConstructible](http://en.cppreference.com/w/cpp/concept/CopyConstructible "C++ concepts: CopyConstructible") or [`MoveConstructible`](http://en.cppreference.com/w/cpp/concept/MoveConstructible "C++ concepts: MoveConstructible") concept) or constructs it with default constructor (and thus `T` must model `DefaultConstructible` concept). Since most of the values are copy-constructible we extend range of the accepted types significantly. That is:
+that takes moved-in-`convert` value `t` (which requires `T` to model [`CopyConstructible`](http://en.cppreference.com/w/cpp/concept/CopyConstructible "C++ concepts: CopyConstructible") or [`MoveConstructible`](http://en.cppreference.com/w/cpp/concept/MoveConstructible "C++ concepts: MoveConstructible") concept) or constructs it with default constructor (and thus `T` must model `DefaultConstructible` concept). Since most of the values are copy-constructible we extend range of the accepted types significantly. That is:
 
 ```c++
 const auto r = convert<A>(100);
