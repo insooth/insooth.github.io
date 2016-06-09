@@ -113,7 +113,7 @@ struct A
 };
 ```
 
-Please note that implicit conversion are usually bad idea in production code, but nothing stands in our way to use them for injecting dependencies in the test code. Important remarks: presented technique will not work with templates out-of-the-box, since templates match the exact type as it was passed. This is the main concern for lambda expression that are _convertible_ to `std::function` but implicit conversion won't work in the templated code:
+Please note that implicit conversions are usually regarded as bad design in the production code, but nothing stands in our way to use them for injecting dependencies in the test code. Important remarks: presented technique will not work with templates out-of-the-box, since templates match the exact type as it was passed. This is the main concern for lambda expression that are _convertible_ to `std::function` but implicit conversion won't work in the templated code:
 
 ```c++
 template<class A>
