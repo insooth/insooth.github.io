@@ -20,13 +20,15 @@ Function that returns ``void`` gives little possibilities to check whether it su
 Function's return value shall be informational. That means, if we transform value of type `T` into `U` we design function from `T` into `U` rather than from `T` into `E` or `void`. This is correct:
 
 ```c++
-T convert(U&& u);    // or:     auto convert(U&& u) -> T;
+T convert(const U& u);    // or:     auto convert(const U& u) -> T;
 ```
 
-because can be readed easily as _convert U into T_. Note that function names that encode types, or are not simple one-word verbs, lead to unreadable API designs. For instance this is not the best choice:
+because can be readed easily as _convert U into T_ (taking fundamental types by reference is not what we would like to do &mdash; thus we will need to control overload set with `enable_if` to choose `convert` that takes value rather than reference).
+
+Note that function names that encode types, or are not simple one-word verbs, lead to unreadable API designs. For instance this is not the best choice:
 
 ```c++
-T from_t_into_u(U&& u);
+T from_t_into_u(const U& u);
 ```
 
 because we already know from the function signature _from what to what_ it is, but we still don't know what it actually does.
@@ -34,17 +36,17 @@ because we already know from the function signature _from what to what_ it is, b
 What about input arguments? Simple answer is: almost never. For example, this function converts passed `u` into `t` where `t` is modified in place and returns an status of type `E` indicating range of possible errors or success (like `enum class` or simple `bool` value):
 
 ```c++
-E convert(U&& u, T& t);
+E convert(const U& u, T& t);
 ```
 which requires pre-allocation of the `t` at the caller side, even if there is not way to convert `U` into `T`. What we should do if algorithm cannot be applied? We can throw na exception (not the best idea: no support from type system, C++ is not Java) or change the signature and handle errors gracefully. We can approach the latter as in the presented example that returns status of type `E`, or use sort of `monadic` style with [`std::optional`](http://en.cppreference.com/w/cpp/utility/optional "std::optional") or `Either` that contains error in its `first` or well-formed value in its `second` ("right") like:
 
 ```c++
-std::pair<E, T> convert(U&& u);
+std::pair<E, T> convert(const U& u);
 ```
 There is a drawback of the above solution: `T` must model [`DefaultConstructible`](http://en.cppreference.com/w/cpp/concept/DefaultConstructible "C++ concepts: DefaultConstructible" ) concept. To fix that we can provide combination of the input argument:
 
 ```c++
-std::pair<E, T> convert(U&& u, T&& t = T{});
+std::pair<E, T> convert(const U& u, T&& t = T{});
 ```
 
 that takes moved-in-`convert` value `t` (which requires `T` to model [`CopyConstructible`](http://en.cppreference.com/w/cpp/concept/CopyConstructible "C++ concepts: CopyConstructible") or [`MoveConstructible`](http://en.cppreference.com/w/cpp/concept/MoveConstructible "C++ concepts: MoveConstructible") concept) or constructs it with default constructor (and thus `T` must model `DefaultConstructible` concept). Since most of the values are copy-constructible we extend range of the accepted types significantly. That is:
@@ -66,7 +68,7 @@ Monadic style with `optional` (aka `Maybe`) or `Either` compose easily, without 
 V v{/* ... */};
 const auto r = stringify(join(metdata, serialize(v)));
 ```
-where (`E` is error type, `N` is internal C++ representation of JSON structure, `either` is `std::pair`):
+where (`E` is error type, `N` is internal C++ representation of JSON structure, `either` is `std::pair`; possible references in arguments' types stripped):
 
 ```c++
 either<E, std::string> stringify(either<E, N>);
@@ -75,7 +77,70 @@ either<E, N> serialize(V);
 ```
 The above boils down to the programming principles: single responsibility and composability. Single responsibility makes software easier to understand thus easier to test.
 
-# Input arguments
+# Arguments
+
+Input arguments should be as much strictly typed as possible, ideally using types that allow control over implicit conversions. We should think about defined function in "forall" terms, i.e. if they were defined for whole domain of possible input arguments ([read more about that](https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md "https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md")).
+
+Having all the functions polymorphic is great, but comes with huge cost. Polymorphism as understood in object-oriented world is based on interfaces that are required to exposed by subtypes. In C++ it works only for "designators", so for pointers (and references). For instance:
+
+```c++
+T foo(A& a);
+```
+
+will work fine for all the types covariant to `A`, and if `A` is an abstract class (contains at least one pure `virtual` member function) we deal with "interface" &mdash; the main idea of the object-oriented design. We can simply use that idea to inject our prepared value of type `M` that implements `A` interface (in other words: derives `public`ly from `A` and `override`s its `virtual` member functions). That's the way how most of the mocking frameworks work (e.g. commonly used [GMock](https://github.com/google/googlemock/blob/master/googlemock/docs/CookBook.md#creating-mock-classes "Creating Mock Classes")), and that's the way we can test with no particular mocking framework at all. We can even mock `protected` and `private` `virtual` member functions too due to fact their actual location is resolved during runtime. Should we make then types of all the arguments being references or pointers? Certainly not &mdash; it is usually bad idea (and no benefit) for fundamental types.
+
+What if we have no interface defined and want to inject mocked value of unrelated type? We can use here implicit conversion to destination type. Implicit conversion can be achieved through conversion `operator` or conversion constructor. For example (see working code on [Coliru](http://coliru.stacked-crooked.com/a/fd8f5725a5c34459 "Coliru Viewer")):
+
+```c++
+T bar(A a);
+```
+
+will accept unrelated `B` if:
+
+```c++
+struct B
+{
+  operator A() { return A{}; }
+};
+```
+
+or `A` defines conversion constructor:
+
+```c++
+struct A
+{
+  A(const B&) { /* ... */ }
+};
+```
+
+Please note that implicit conversion are usually bad idea in production code, but nothing stands in our way to use them for injecting dependencies in the test code. Important remarks: presented technique will not work with templates out-of-the-box, since templates match the exact type as it was passed. This is the main concern for lambda expression that are _convertible_ to `std::function` but implicit conversion won't work in the templated code:
+
+```c++
+template<class A>
+T baz(std::function<void (A)>&&);
+
+baz([](int){});  // error: lambda is not derived from std::function
+```
+
+Type `A` is deduced and substituted, no conversion from lambda do argument type happens. To overcome that, we can disable deduction with `identity` metafunction defined as:
+
+```c++
+template<class T>
+using identity_t = std::common_type_t<T>;
+```
+
+then the following (see working code on [Coliru](http://coliru.stacked-crooked.com/a/a0c9122f40a9ac38 "Coliru Viewer")) works fine (note explicit type specification in a call to `baz` which is required):
+
+```c++
+template<class A>
+T baz(identity_t<std::function<void (A)>>&&);
+
+baz<int>([](int){});
+```
+
+We can reuse that knowledge in mocking, but it will lead us to change in the tested functions' signatures which rather do not try to do. That's share similar concern as subtype polymorphic arguments described at the begining of this paragraph.
+
+[GMock guide defines several ways](https://github.com/google/googlemock/blob/master/googlemock/docs/CookBook.md#mocking-nonvirtual-methods "Mocking Nonvirtual Methods") to test non-virtual/free functions as a whole, which is much more than simply injecting dependencies.
 
 # Data types
 
