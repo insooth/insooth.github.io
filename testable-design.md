@@ -113,7 +113,18 @@ struct A
 };
 ```
 
-Please note that implicit conversions are usually regarded as bad design in the production code, but nothing stands in our way to use them for injecting dependencies in the test code. Important remarks: presented technique will not work with templates out-of-the-box, since templates match the exact type as it was passed. This is the main concern for lambda expression that are _convertible_ to `std::function` but implicit conversion won't work in the templated code:
+Unfortunately it gives us nothing, because by converting to non-mocked type, we loose altered behaviour we ship with the mock. Type that is mocked will preserve the altered behaviour only if exposes constructor that is dependency-injection aware.
+
+If our design is based on parametric polymorphism, so that we rely on injected types through templates, we can easily substitute any of the types with mocks. For example:
+
+```c++
+template<class T, class U>
+void injectable(T t, U u);
+```
+
+can be called with any `T` and any `U`. We can use type deduction and ask compiler to figure out types of passed arguments for us. If we want to limit the set of acceptable type of some semantics, we shall use predefined or define a [concept](http://en.cppreference.com/w/cpp/language/constraints "Constraints and concepts").
+
+Type deduction will not work with all templated code out-of-the-box, due to fact that templates match the exact type as it was passed. This is the main concern for lambda expression that are _convertible_ to `std::function` but implicit conversion won't work in the templated code:
 
 ```c++
 template<class A>
