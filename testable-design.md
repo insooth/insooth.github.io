@@ -11,7 +11,7 @@ What makes the following function being testable
 R foo(Ts... args);
 ```
 
-is the design of its arguments, return values and body.
+is the design of its arguments, return values and scope of responsibilities taken by it.
 
 ## Return values
 
