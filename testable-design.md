@@ -153,6 +153,10 @@ We can reuse that knowledge in mocking, but it will lead us to change in the tes
 
 [GMock guide defines several ways](https://github.com/google/googlemock/blob/master/googlemock/docs/CookBook.md#mocking-nonvirtual-methods "Mocking Nonvirtual Methods") to test non-virtual/free functions as a whole, which is much more than simply injecting dependencies.
 
+# Body
+
+Single responsibility, side effects visible
+
 # Data types
 
 Well designed software is possible to be tested _in isolation_, that is each its module can be tested independently from the system. Ideally, such software shall be possible to be built for the development system, not only for the target, thus enabling full set of developer tools (like debuggers, sanitizers, etc.).
