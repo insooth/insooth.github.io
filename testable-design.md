@@ -11,7 +11,7 @@ What makes the following function being testable
 R foo(Ts... args);
 ```
 
-is the design of its arguments, return values and scope of responsibilities taken by it.
+is the design of its arguments, return values and scope of responsibility taken by it.
 
 ## Return values
 
@@ -155,19 +155,44 @@ We can reuse that knowledge in mocking, but it will lead us to change in the tes
 
 # Data types
 
-- isolation
-- explicit dependencies
+Well designed software is possible to be tested _in isolation_, that is each its module can be tested independently from the system. Ideally, such software shall be possible to be built for the development system, not only for the target, thus enabling full set of developer tools (like debuggers, sanitizers, etc.).
 
-# Possibilities
 
-- runtime polymorphism, classic
-- hi-perf dependency injection (cf. policy based design)
-- linker magic
+Parts of the system that are not under the isolated tests are _mocked_, so that they are replaced by software that simulates (or emulates) the environment. It is very important to enable system to be mockable, that is all its dependencies can be replaced by mocks. Following `class` has non-explicit dependencies which are not seen at the first look into interface and require special way of mocking:
+
+```c++
+class X
+{
+ public:
+    X();
+    void run(const std::chrono::milliseconds& timeout) const;
+ private:
+    std::string s;
+};
+
+X::X()
+{
+    G::make_instance(s);
+}
+
+void X::run(const std::chrono::milliseconds& timeout) const
+{
+    G::get(s)->run(timeout);
+}
+```
+
+Class `X` has hidden dependency in `G` and its internals. One can find a way to use shared libraries and force linker to select mocked symbol instead of the original one. That's possible, but it hides the problem: we have produced non-testable design. We need to redesign to make it possible to inject dependency.
+
+## The fastest: _hi-perf dependency injection_ via policy-based design
+
+## The (slowest) classic: runtime polymorphism
+
+## The faster than slowest: Variant-driven
+
 - variant driven (mid of policy-based design and runtime polymorphism)
-- ?
- 
-What about the types, that are passed by value?
+
+## The hack: linker magic
 
 #### About this document
 
-June 8, 2016 -- Krzysztof Ostrowski
+June 8-13, 2016 -- Krzysztof Ostrowski
