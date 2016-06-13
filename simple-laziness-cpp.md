@@ -4,8 +4,8 @@
 In the C++ world _lazy evaluation_ is usually linked to templates and their property of separation of definition and actual instantiation. Given that we can for instance delay binding of a symbol:
 
 ```c++
-void register(int);
-void deregister(int);
+void register(int*);
+void deregister(int*);
 
 template<class Tag>
 struct delayed_registrator
