@@ -70,7 +70,7 @@ bool serialise_any(const S& from, variant<int, string, C>& into)
 
 Function `serialise_any` will stop execution at first `true` returned from subsequent `serialise` call. This is classic understanding of pattern matching, where all the cases are tested in order.
 
-# Construction with `?:`
+## Construction with `?:`
 
 In some cases we cannot construct value with default constructor (and then update its state), then we use ternary operator:
 
