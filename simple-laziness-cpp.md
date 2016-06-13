@@ -24,7 +24,7 @@ struct device_tag {};
 delayed_registrator<device_tag> registered;
 ```
 
-Functions in `register` and `deregister` must be there &mdash; name lookup for non-template dependent entities is done at the point of definition, so that at least forward declarations of `register` and `deregister` must be available _before_ definition of `delayed_registrator`. Type is templated over `Tag` which does the "delay effect" we wanted to achieve.
+Functions in `register` and `deregister` must be there &mdash; name lookup is done at the point of definition (but argument-dependent lookup at instantiation, [live example](http://coliru.stacked-crooked.com/a/577669cfcd3af126 "Coliru Viewer")), so that at least forward declarations of `register` and `deregister` must be available _before_ definition of `delayed_registrator`. Type is templated over `Tag` which does the "delay effect" we wanted to achieve.
 
 Besides the above, we have old plain short circuiting we inherited from `C` language: logical operators like `&&` (`and`), `||` (`or`) and ternary operator `?:`. They can be used as constructions to lazy execute (expressions must be valid C++) some of the expressions. Note, "not executed" is not the same as "not evaluated" (like [`decltype`, `noexcept`, `sizeof`, `typeid` or `requires`](http://en.cppreference.com/w/cpp/language/expressions#Unevaluated_expressions "Expressions")). With short circuiting we want to delay or skip execution of a costly operation.
 
