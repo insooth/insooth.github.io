@@ -18,7 +18,7 @@ struct delayed_registrator
 where symbol `id` is not avaiable at the point of definition, but it is avaiable at the point of instantiation:
 
 ```c++
-const device_id id = 1234;
+const int id = 1234;
 struct device_tag {};
 
 delayed_registrator<device_tag> registered;
