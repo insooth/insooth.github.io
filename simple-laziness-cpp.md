@@ -34,7 +34,7 @@ Simple ordering by the increasing processing cost can save a lot of runtime:
 
 ```c++
 const bool can_progress
-    = invariant                 // constant cost
+    =    invariant              // constant cost
       && has_environment()      // medium cost: verifies in-memory structures
       && check_network_nodes(); // huge cost: does blocking IO
 ```
