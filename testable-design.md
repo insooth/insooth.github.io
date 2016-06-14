@@ -262,7 +262,16 @@ The hard part is the way to _visit_ variant, forward input args (here `timeout`)
 
 Let's say we want to inject mocked `G::make_instance` only, without making changes to the original code. What we actually want to do is to instruct linker to select symbol of `G::make_instance` from translation unit with mocks.
 
-/TODO/
+Trick with linker requires split of tests and tested code into shared libraries. If we define an implementation with mocked body in library with test code:
+
+```c++
+void G::make_instance(std::string)
+{
+    /* ... mocked body ...*/
+}
+```
+
+compile it, and then link against shared library with tested code that has original implementation of the above member function, we will always use mocked one since it was already linked into out test code.
 
 #### About this document
 
