@@ -260,7 +260,9 @@ The hard part is the way to _visit_ variant, forward input args (here `timeout`)
 
 ## The hack: linker magic
 
-Shared libraries and symbol binding.
+Let's say we want to inject mocked `G::make_instance` only, without making changes to the original code. What we actually want to do is to instruct linker to select symbol of `G::make_instance` from translation unit with mocks.
+
+/TODO/
 
 #### About this document
 
