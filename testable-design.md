@@ -155,14 +155,21 @@ We can reuse that knowledge in mocking, but it will lead us to change in the tes
 
 # Body
 
-Single responsibility, side effects visible
+Less code requires less tests. That is, our goal is to keep bodies of functions as short (in terms of lines of code) and simple as possible. Simple here means:
+* use of already tested tools (like STL, Boost or internal libraries) &mdash; favouring composition over modification,
+* keeping control flow as straight as possible &mdash; thus reducing [cyclomatic complexity](https://en.wikipedia.org/wiki/Cyclomatic_complexity "Cyclomatic complexity") and number of paths (~test cases) to be tested,
+* expressing all the possible side effects that can be introduced by function explicitly (in types, comments, through abusing `const` qualifier, etc.) &mdash; no surprises and hidden dependencies,
+* introducing single reposibility &mdash; split complex thing into simple steps that compose,
+* using contracts and constraints (like assertions and [Concepts](http://en.cppreference.com/w/cpp/language/constraints "Constraints and concepts")).
+
+Programming by adding new `if-else` blocks is a sign of bad design. We should strive to design algorithms that work [for all the data from the arguments' domains](https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md "Partial function and magic values"). That's usually hard to achieve and we end up with multiple _special cases_. We shall have as little as possible special cases. We can try to limit number of them by rearranging or reducing boolean expressions that activate special cases &mdash; doing that usually improves code readability. If that does not help, we probably have misunderstood single responsibility or reinvent the wheel, redesign is required.
 
 # Data types
 
 Well designed software is possible to be tested _in isolation_, that is each its module can be tested independently from the system. Ideally, such software shall be possible to be built for the development system, not only for the target, thus enabling full set of developer tools (like debuggers, sanitizers, etc.).
 
 
-Parts of the system that are not under the isolated tests are _mocked_, so that they are replaced by software that simulates (or emulates) the environment. It is very important to enable system to be mockable, that is all its dependencies can be replaced by mocks. Following `class` has non-explicit dependencies which are not seen at the first look into interface and require special way of mocking:
+Parts of the system that are not under the isolated tests are _mocked_, so that they are replaced by software that simulates (or emulates) the environment. It is very important to enable system for mocks thus making it mockable, i.e. all its dependencies can be replaced by mocks. Following `class` has non-explicit dependencies which are not seen at the first look into interface and require special way of mocking:
 
 ```c++
 class X
@@ -199,4 +206,4 @@ Class `X` has hidden dependency in `G` and its internals. One can find a way to 
 
 #### About this document
 
-June 8-13, 2016 -- Krzysztof Ostrowski
+June 8-14, 2016 -- Krzysztof Ostrowski
