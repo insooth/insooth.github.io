@@ -194,15 +194,73 @@ void X::run(const std::chrono::milliseconds& timeout) const
 
 Class `X` has hidden dependency in `G` and its internals. One can find a way to use shared libraries and force linker to select mocked symbol instead of the original one. That's possible, but it hides the problem: we have produced non-testable design. We need to redesign to make it possible to inject dependency.
 
-## The fastest: _hi-perf dependency injection_ via policy-based design
+## The fastest: _hi-perf dependency injection_
+
+We can inject dependency into `X` through type, effectively making `X` a template that takes a strategy and binds to it at compile time:
+
+```c++
+template<class T = G>
+class X : T
+{
+    using T::run;
+    using T::make_instance;
+
+ public:
+
+    X()
+    {
+      T::make_instance(s);
+    }
+
+    void run(const std::chrono::milliseconds& timeout) const
+    {
+      T::get(s)->run(timeout);
+    }
+
+ private:
+    std::string s;
+};
+```
+
+Presented technique is known as [policy-based design](https://en.wikipedia.org/wiki/Policy-based_design "Policy-based design"), and in GMock world [hi-perf dependency injection](https://github.com/google/googletest/blob/master/googlemock/docs/CookBook.md#mocking-nonvirtual-methods "Mocking Nonvirtual Methods").
 
 ## The (slowest) classic: runtime polymorphism
 
+Classic object-oriented way is to introduce an interface:
+
+```c++
+struct I
+{
+    virtual void make_instance(std::string&&) = 0;
+    virtual void run(const std::chrono::milliseconds& timeout) const = 0;
+};
+```
+
+and then take an object which is the concrete implementation (strategy) of `I` at run time as one of the `X` constructor's argument.
+
 ## The faster than slowest: Variant-driven
 
-- variant driven (mid of policy-based design and runtime polymorphism)
+Data type [variant<T0, T1, ...>](https://isocpp.org/blog/2015/11/the-variant-saga-a-happy-ending "The Variant Saga: A happy ending?") stores exactly one value of the type taken from set of allowed types passed as paramters to template at compile time. We can use that knowledge, combine it with [PIMPL idiom](https://en.wikipedia.org/wiki/Opaque_pointer "Opaque pointer"), and add into `X` one new member:
+
+```c++
+class X
+{
+    X() : m_impl{G{}} {}
+    explicit constexpr X(Mock&& m) : m_impl{std::move(m)} {}
+
+    /* ... */
+
+    variant<Mock, G> m_impl;
+};
+```
+
+[Boost's `variant`]( "Boost.Variant") can work with incomplete types, so that we can create illusion of PIMPL.
+
+The hard part is the way to _visit_ variant, forward input args (here `timeout`) args to the visitor and finally call that function. We do not use an runtime dispatch through virtual functions as in the `I` interface, but variant does that internally anyway to select the value actually stored. If `I` contains multiple virtual member functions, variant comes with benefit in reduction of virtual function calls. On the other hand, we are expilicitly bound to the `Mock` and `G` types which reduces flexibility.
 
 ## The hack: linker magic
+
+Shared libraries and symbol binding.
 
 #### About this document
 
