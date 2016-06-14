@@ -254,7 +254,7 @@ class X
 };
 ```
 
-[Boost's `variant`]( "Boost.Variant") can work with incomplete types, so that we can create illusion of PIMPL.
+[Boost's `variant`](www.boost.org/doc/libs/1_61_0/doc/html/variant.html "Boost.Variant") can work with incomplete types, so that we can create illusion of PIMPL.
 
 The hard part is the way to _visit_ variant, forward input args (here `timeout`) args to the visitor and finally call that function. We do not use an runtime dispatch through virtual functions as in the `I` interface, but variant does that internally anyway to select the value actually stored. If `I` contains multiple virtual member functions, variant comes with benefit in reduction of virtual function calls. On the other hand, we are expilicitly bound to the `Mock` and `G` types which reduces flexibility.
 
