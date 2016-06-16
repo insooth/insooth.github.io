@@ -33,7 +33,7 @@ T from_t_into_u(const U& u);
 
 because we already know from the function signature _from what to what_ it is, but we still don't know what it actually does.
 
-What about input arguments? Simple answer is: almost never. For example, this function converts passed `u` into `t` where `t` is modified in place and returns an status of type `E` indicating range of possible errors or success (like `enum class` or simple `bool` value):
+What about input (taken by non-const reference or pointer) arguments? Simple answer is: almost never use them. For example, this function converts passed `u` into `t` where `t` is modified in place and returns an status of type `E` indicating range of possible errors or success (like `enum class` or simple `bool` value):
 
 ```c++
 E convert(const U& u, T& t);
