@@ -38,7 +38,7 @@ What about input (taken by non-const reference or pointer) arguments? Simple ans
 ```c++
 E convert(const U& u, T& t);
 ```
-which requires pre-allocation of the `t` at the caller side, even if there is not way to convert `U` into `T`. What we should do if algorithm cannot be applied? We can throw na exception (not the best idea: no support from type system, C++ is not Java) or change the signature and handle errors gracefully. We can approach the latter as in the presented example that returns status of type `E`, or use sort of `monadic` style with [`std::optional`](http://en.cppreference.com/w/cpp/utility/optional "std::optional") or `Either` that contains error in its `first` or well-formed value in its `second` ("right") like:
+which requires pre-allocation of the `t` at the caller side, even if there is not way to convert `U` into `T`. What we should do if algorithm cannot be applied? We can throw na exception (not the best idea: no support from type system, C++ is not Java) or change the signature and handle errors gracefully. We can approach the latter as in the presented example that returns status of type `E`, or use sort of _monadic_ style with [`std::optional`](http://en.cppreference.com/w/cpp/utility/optional "std::optional") or `Either` that contains error in its `first` or well-formed value in its `second` ("right") like:
 
 ```c++
 std::pair<E, T> convert(const U& u);
