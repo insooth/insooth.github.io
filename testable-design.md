@@ -81,13 +81,13 @@ The above boils down to the programming principles: single responsibility and co
 
 Arguments should be as much strictly typed as possible, ideally using types that allow control over implicit conversions. We should think about defined function in "forall" terms, i.e. if they were defined for whole domain of possible arguments ([read more about that](https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md "https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md")).
 
-Having all the functions polymorphic is great, but comes with huge cost. Polymorphism as understood in object-oriented world is based on interfaces that are required to exposed by subtypes. In C++ it works only for "designators", so for pointers (and references). For instance:
+Having all the functions polymorphic is great, but usually comes with huge cost. Polymorphism as understood in object-oriented world is based on interfaces that are required to be exposed by subtypes. In C++ it works only for "designators", so for pointers (and references). For instance:
 
 ```c++
 T foo(A& a);
 ```
 
-will work fine for all the types covariant to `A`, and if `A` is an abstract class (contains at least one pure `virtual` member function) we deal with "interface" &mdash; the main idea of the object-oriented design. We can simply use that idea to inject our prepared value of type `M` that implements `A` interface (in other words: derives `public`ly from `A` and `override`s its `virtual` member functions). That's the way how most of the mocking frameworks work (e.g. commonly used [GMock](https://github.com/google/googlemock/blob/master/googlemock/docs/CookBook.md#creating-mock-classes "Creating Mock Classes")), and that's the way we can test with no particular mocking framework at all. We can even mock `protected` and `private` `virtual` member functions too due to fact their actual location is resolved during runtime. Should we make then types of all the arguments being references or pointers? Certainly not &mdash; it is usually bad idea (and no benefit) for fundamental types.
+will work fine for all the types covariant to `A`, and if `A` is an abstract class (contains at least one pure `virtual` member function) we deal with "interface" &mdash; the main idea of the object-oriented design. We can simply use that idea to inject our prepared value of type `M` that implements `A` interface (in other words: derives `public`ly from `A` and `override`s its `virtual` member functions). That's the way how most of the mocking frameworks work (e.g. widely used [GMock](https://github.com/google/googlemock/blob/master/googlemock/docs/CookBook.md#creating-mock-classes "Creating Mock Classes")), and that's the way we can test with no particular mocking framework at all. We can even mock `protected` and `private` `virtual` member functions too due to fact their actual location is resolved during runtime. Should we make then types of all the arguments being references or pointers? Certainly not &mdash; it is usually bad idea (and no benefit) for fundamental types.
 
 What if we have no interface defined and want to inject mocked value of unrelated type? We can use here implicit conversion to destination type. Implicit conversion can be achieved through conversion `operator` or conversion constructor. For example (see working code on [Coliru](http://coliru.stacked-crooked.com/a/fd8f5725a5c34459 "Coliru Viewer")):
 
@@ -122,7 +122,7 @@ template<class T, class U>
 void injectable(T t, U u);
 ```
 
-can be called with any `T` and any `U`. We can use type deduction and ask compiler to figure out types of passed arguments for us. If we want to limit the set of acceptable type of some semantics, we shall use predefined or define a [concept](http://en.cppreference.com/w/cpp/language/constraints "Constraints and concepts").
+can be called with any `T` and any `U`. We can use type deduction and ask compiler to figure out types of passed arguments for us. If we want to limit the set of acceptable type of some semantics, we shall use predefined one or define custom [concept](http://en.cppreference.com/w/cpp/language/constraints "Constraints and concepts").
 
 Type deduction will not work with all templated code out-of-the-box, due to fact that templates match the exact type as it was passed. This is the main concern for lambda expression that are _convertible_ to `std::function` but implicit conversion won't work in the templated code:
 
@@ -149,7 +149,7 @@ T baz(identity_t<std::function<void (A)>>&&);
 baz<int>([](int){});
 ```
 
-We can reuse that knowledge in mocking, but it will lead us to change in the tested functions' signatures which rather do not try to do. That's share similar concern as subtype polymorphic arguments described at the begining of this paragraph.
+We can reuse that knowledge in mocking, but it will lead us to changes in the tested functions' signatures which we rather should not try to do. That shares similar concern as subtype polymorphic arguments described at the begining of this paragraph.
 
 [GMock guide defines several ways](https://github.com/google/googlemock/blob/master/googlemock/docs/CookBook.md#mocking-nonvirtual-methods "Mocking Nonvirtual Methods") to test non-virtual/free functions as a whole, which is much more than simply injecting dependencies.
 
@@ -162,14 +162,14 @@ Less code requires less tests. That is, our goal is to keep bodies of functions 
 * introducing single reposibility &mdash; split complex thing into simple steps that compose,
 * using contracts and constraints (like assertions and [Concepts](http://en.cppreference.com/w/cpp/language/constraints "Constraints and concepts")).
 
-Programming by adding new `if-else` blocks is a sign of bad design. We should strive to design algorithms that work [for all the data from the arguments' domains](https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md "Partial function and magic values"). That's usually hard to achieve and we end up with multiple _special cases_. We shall have as little as possible special cases. We can try to limit number of them by rearranging or reducing boolean expressions that activate special cases &mdash; doing that usually improves code readability. If that does not help, we probably have misunderstood single responsibility or reinvent the wheel, redesign is required.
+Programming by adding new `if-else` blocks is a sign of bad design. We should strive to design algorithms that work [for all the data from the arguments' domains](https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md "Partial function and magic values"). That's usually hard to achieve and we end up with multiple _special cases_. We shall have as little as possible special cases. We can try to limit number of them by rearranging or reducing boolean expressions that activate special cases &mdash; doing that usually improves code readability. If that does not help, we probably have misunderstood single responsibility or reinventing the wheel, redesign is required.
 
 # Data types
 
 Well designed software is possible to be tested _in isolation_, that is each its module can be tested independently from the system. Ideally, such software shall be possible to be built for the development system, not only for the target, thus enabling full set of developer tools (like debuggers, sanitizers, etc.).
 
 
-Parts of the system that are not under the isolated tests are _mocked_, so that they are replaced by software that simulates (or emulates) the environment. It is very important to enable system for mocks thus making it mockable, i.e. all its dependencies can be replaced by mocks. Following `class` has non-explicit dependencies which are not seen at the first look into interface and require special way of mocking:
+Parts of the system that are not under the isolated tests are _mocked_, so that they are replaced by software that simulates (or emulates) the environment. It is very important to enable system for mocks thus making it mockable, i.e. all its dependencies can be replaced by mocks. Following `class` has non-explicit dependencies which are not seen at first sight and require special way of mocking:
 
 ```c++
 class X
@@ -256,13 +256,13 @@ class X
 
 [Boost's `variant`](www.boost.org/doc/libs/1_61_0/doc/html/variant.html "Boost.Variant") can work with incomplete types, so that we can create illusion of PIMPL.
 
-The hard part is the way to _visit_ variant, forward arguments (here `timeout`) args to the visitor and finally call that function. We do not use an runtime dispatch through virtual functions as in the `I` interface, but variant does that internally anyway to select the value actually stored. If `I` contains multiple virtual member functions, variant comes with benefit in reduction of virtual function calls. On the other hand, we are expilicitly bound to the `Mock` and `G` types which reduces flexibility.
+The hard part is the way to _visit_ variant, forward arguments (here `timeout`) to the visitor and finally call that function. We do not use runtime dispatch through virtual functions as in the `I` interface, but variant does such dispatch internally anyway to select the value currently stored. If `I` contains multiple virtual member functions, variant comes with benefit in reduction of virtual function calls. On the other hand, we are expilicitly bound to the `Mock` and `G` types, thus reducing flexibility.
 
 ## The hack: linker magic
 
 Let's say we want to inject mocked `G::make_instance` only, without making changes to the original code. What we actually want to do is to instruct linker to select symbol of `G::make_instance` from translation unit with mocks.
 
-Trick with linker requires split of tests and tested code into shared libraries. If we define an implementation with mocked body in library with test code:
+Trick with linker requires split of tests and tested code into (dynamic) shared libraries. If we define an implementation with mocked body in library with test code:
 
 ```c++
 void G::make_instance(std::string)
@@ -271,8 +271,8 @@ void G::make_instance(std::string)
 }
 ```
 
-compile it, and then link against shared library with tested code that has original implementation of the above member function, we will always use mocked one since it was already linked into out test code.
+compile it, and then link against shared library with tested code that has original implementation of the above member function, we will always use mocked one since it was already linked into ou test code.
 
 #### About this document
 
-June 8-14, 2016 -- Krzysztof Ostrowski
+June 8-16, 2016 -- Krzysztof Ostrowski
