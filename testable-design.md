@@ -79,7 +79,7 @@ The above boils down to the programming principles: single responsibility and co
 
 # Arguments
 
-Input arguments should be as much strictly typed as possible, ideally using types that allow control over implicit conversions. We should think about defined function in "forall" terms, i.e. if they were defined for whole domain of possible input arguments ([read more about that](https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md "https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md")).
+Arguments should be as much strictly typed as possible, ideally using types that allow control over implicit conversions. We should think about defined function in "forall" terms, i.e. if they were defined for whole domain of possible arguments ([read more about that](https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md "https://github.com/insooth/insooth.github.io/blob/master/partial-functions-magic-values.md")).
 
 Having all the functions polymorphic is great, but comes with huge cost. Polymorphism as understood in object-oriented world is based on interfaces that are required to exposed by subtypes. In C++ it works only for "designators", so for pointers (and references). For instance:
 
@@ -256,7 +256,7 @@ class X
 
 [Boost's `variant`](www.boost.org/doc/libs/1_61_0/doc/html/variant.html "Boost.Variant") can work with incomplete types, so that we can create illusion of PIMPL.
 
-The hard part is the way to _visit_ variant, forward input args (here `timeout`) args to the visitor and finally call that function. We do not use an runtime dispatch through virtual functions as in the `I` interface, but variant does that internally anyway to select the value actually stored. If `I` contains multiple virtual member functions, variant comes with benefit in reduction of virtual function calls. On the other hand, we are expilicitly bound to the `Mock` and `G` types which reduces flexibility.
+The hard part is the way to _visit_ variant, forward arguments (here `timeout`) args to the visitor and finally call that function. We do not use an runtime dispatch through virtual functions as in the `I` interface, but variant does that internally anyway to select the value actually stored. If `I` contains multiple virtual member functions, variant comes with benefit in reduction of virtual function calls. On the other hand, we are expilicitly bound to the `Mock` and `G` types which reduces flexibility.
 
 ## The hack: linker magic
 
