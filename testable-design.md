@@ -62,7 +62,7 @@ A a{/* ... */};
 const auto r = convert(100, a);
 ```
 
-Monadic style with `optional` (aka `Maybe`) or `Either` compose easily, without if blocks checking results in beetween (error is forwarded, computation stops on the first error), as an example converting of value `V` into JSON string that contains some `metadata` and the value itself:
+Monadic style with `optional` (aka `Maybe`) or `Either` compose easily, without if blocks that check results in beetween (error is forwarded, computation stops on the first error), as an example converting of value `V` into JSON string that contains some `metadata` and the value itself:
 
 ```c++
 V v{/* ... */};
