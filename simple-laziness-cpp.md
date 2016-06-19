@@ -1,7 +1,7 @@
 
 # Take benefit from simple laziness
 
-In the C++ world _lazy evaluation_ is usually linked to templates and their property of separation of definition and actual instantiation. Given that we can, for instance, delay binding of a symbol:
+In the C++ world _lazy evaluation_ is usually linked to templates and their property that separates definition from actual instantiation. Given that we can, for instance, delay binding of a symbol:
 
 ```c++
 void register(int*);
