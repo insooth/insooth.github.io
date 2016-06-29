@@ -20,8 +20,8 @@ Split of data and algorithms that operate on it applies in multiple places. One 
 The data we operate on is fixed in the memory, i.e. is preallocated. We can easily allocate huge buffer with `mmap` upon system start and take chunks out of it later, but then we need to deal with fragmentation and all the other issues already solved in kernel memory management and `malloc`'s internals (which is an example of intrusive design).
 
 What we want to have are the pools of identical objects (rather than raw memory) and predefined ways to compose those objects. By objects we mean structures with known data layout, i.e. they never define hidden members introduced by `virtual` keyword. We never allocate (on heap, stack, etc.) _additional_ memory: we can take an object from the pool, or put back object to the pool. That implies following:
-* we know address ranges and addresses of all the objects (so: memory) used in our system &mdash; that gives additional debugging possibilities,
-* we link object through pointers those are always valid addreseses (memory is prealloacted and never freed during runtime),
+* we know address ranges and addresses of all the objects (i.e. memory) used in our system &mdash; that gives additional debugging possibilities,
+* we link object through pointers those are always valid addresses (memory is prealloacted and never freed during runtime),
 * we do not use subtype polymorphims thus eliminate indirect calls in object type dispatch &mdash; we are more cache friendly,
 * it is an fatal error if we run out "free" objects in the pool ready to be taken &mdash; we need to carrefully calculate pool sizes and give fallback possibilities (force some resources to be freed, c.f. [Linux kernel out-of-memory handling](http://linux-mm.org/OOM_Killer "OOM Killer") or phone calls dropping in case of emergency calls).
 
