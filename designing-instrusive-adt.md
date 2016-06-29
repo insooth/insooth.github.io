@@ -11,6 +11,49 @@ NOTE: This article is neither about [building intrusive list or tree](http://www
 
 ## Data and control plane
 
+Most of the communication protocols that are used to carry exchange data between endpoints share common idea of dedicated components. Those components include _data plane_ that defines the raw data being transported; and _control plane_ that establishes, keeps alive and terminates communication. Typically, _data plane_ describes internally how to treat raw bits of data by use of predefined algorithms, so that it actually _does_ some controlling of the raw data being transported.
+
+Split of data and algorithms that operate on it applies in multiple places. One of them is STL containers and `<algorithms>` together with `<functional>`, although it is not perfect (cf. `std::map` and `std::find` which is not `map`-aware, [UFCS](https://isocpp.org/files/papers/N4165.pdf "Herb Sutter: Unified Call Syntax") may fix that). Intrusive design benefits from the described split.
+
+### Memory utilisation
+
+The data we operate on is fixed in the memory, i.e. is preallocated. We can easily allocate huge buffer with `mmap` upon system start and take chunks out of it later, but then we need to deal with fragmentation and all the other issues already solved in kernel memory management and `malloc`'s internals (which is an example of intrusive design).
+
+What we want to have are the pools of identical objects (rather than raw memory) and predefined ways to compose those objects. By objects we mean structures with known data layout, i.e. they never define hidden members introduced by `virtual` keyword. We never allocate (on heap, stack, etc.) _additional_ memory: we can take an object from the pool, or put back object to the pool. That implies following:
+* we know address ranges and addresses of all the objects (so: memory) used in our system &mdash; that gives additional debugging possibilities,
+* we link object through pointers those are always valid addreseses (memory is prealloacted and never freed during runtime),
+* we do not use subtype polymorphims thus eliminate indirect calls in object type dispatch &mdash; we are more cache friendly,
+* it is an fatal error if we run out "free" objects in the pool ready to be taken &mdash; we need to carrefully calculate pool sizes and give fallback possibilities (force some resources to be freed, c.f. [Linux kernel out-of-memory handling](http://linux-mm.org/OOM_Killer "OOM Killer") or phone calls dropping in case of emergency calls).
+
+As an example we model forward traversal list `[head, next]`:
+
+```c++
+auto head = pool_of<item>::occupy();
+auto next = pool_of<item>::occupy();
+head.link(next);
+```
+
+where
+
+```c++
+struct item
+{
+    void link(const item* const element) { /* ... */ }
+ private:
+    // some data here
+    atomic<item*> next = nullptr; 
+};
+```
+
+There is no extra memory allocation for the "link" between data that stores pointer, i.e. item of the list contains pointer to the next item. Pointer assignment can be done by use of non-blocking algorithm. It is an arbitrary decision whether list should be circular or not. Typically `head` should store size of the list, so that it is required to have different type. Linking already linked item is a fatal error in resource management.
+
+We can lift result type of function `pool_of<T>::occupy` into `Maybe`-like monad seemlessly by wrapping result type into a `item`-compatible barebone. If the `head` is `Nothing` then no matter what is under `next`, `head.link(...)` has no effect. The special care shall be taken to release `next` if `head` is `Nothing`. That can be done seamlessly or explicitly:
+
+```c++
+head.link_or_release(next);
+```
+
+
 ## Resources
 
 ### Multiple users
@@ -21,4 +64,4 @@ NOTE: This article is neither about [building intrusive list or tree](http://www
 
 #### About this document
 
-June 19, 2016 &mdash; Krzysztof Ostrowski
+June 19,29, 2016 &mdash; Krzysztof Ostrowski
