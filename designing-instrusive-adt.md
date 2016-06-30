@@ -38,7 +38,10 @@ where
 ```c++
 struct item
 {
+    // some ctors, etc.
+
     void link(const item* const element) { /* ... */ }
+
  private:
     // some data here
     atomic<item*> next = nullptr; 
