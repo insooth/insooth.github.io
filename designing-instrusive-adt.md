@@ -11,7 +11,7 @@ NOTE: This article is neither about [building intrusive list or tree](http://www
 
 ## Data and control plane
 
-Widely known communication protocols that are used to exchange data between endpoints share common idea of dedicated components. Those components include i.a. _data plane_ that defines the raw data being transported; and _control plane_ that establishes, keeps alive and terminates communication. Typically, _data plane_ describes way to treat raw bits of data through predefined algorithms, so that it actually _does_ some controlling of the raw data being transported.
+Widely used communication protocols that are used to exchange data between endpoints share common idea of dedicated components. Those components include i.a. _data plane_ that defines the raw data being transported; and _control plane_ that establishes, keeps alive and terminates communication. Typically, _data plane_ describes way to treat raw bits of data through predefined algorithms, so that it actually _does_ some controlling of the raw data being transported.
 
 Split of data and algorithms that operate on it applies in multiple places. One of them is STL containers and `<algorithms>` together with `<functional>`, although it is not perfect (cf. `std::map` and `std::find` which is not `map`-aware, [UFCS](https://isocpp.org/files/papers/N4165.pdf "Herb Sutter: Unified Call Syntax") may fix that). Intrusive design benefits from the described split.
 
@@ -58,6 +58,11 @@ We can lift result type of function `pool_of<T>::occupy` into `Maybe`-like monad
 head.link_or_release(next);
 ```
 
+### State persistency
+
+Algorithms that operate on data in intrusive design do not create that data generally. The data to be processed must be already _prepared_. That includes all the user-specific parts (_payload_) and meta-data which is required by algorithms and abstract data structures in which data is organised. Example for the latter is the `next` member in the intrusive linked list.
+
+In case of stateful system we would like to store additional data that is utilised by the algorithms internally. That may be reference counter, availability bit, etc. The hard part is to define beforehand the data which is going to be stored persistently in objects. Size of such data must be minimal yet fully satisfying given algorithm.
 
 ## Resources
 
