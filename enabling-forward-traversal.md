@@ -154,7 +154,7 @@ class json_node_type
 };
 ```
 
-We have enabled forward traversal and kept the `json_node_type` type name unchanged. We guarantee that at least one `json_node_type` exists, that is the one is passed as second argument into `deserialise` &mdash; there is no need to check against empty `vector` of nodes as in the first solution. Thus, we eliminated branching at the cost of storing [three pointers](https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01523_source.html#l00082 "GCC std::vector implementation") per `json_node_type`.
+We have enabled forward traversal and kept the `json_node_type` type name unchanged. We guarantee that at least one `json_node_type` exists, that is the one is passed as second argument into `deserialise` &mdash; there is no need to check against empty `vector` of nodes as in the first solution. Thus, we eliminated branching at the cost of storing [three pointers](https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01523_source.html#l00082 "GCC std::vector implementation") per `json_node_type`. See [Boost note](http://www.boost.org/doc/libs/1_48_0/doc/html/container/containers_of_incomplete_types.html "Containers of Incomplete Types") and [N4510 proposal](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/n4510.html "Minimal incomplete type support for standard containers, revision 4") on incomplete types and standard containers.
 
 Presented design is ready for extensions &ndash; we can form multi-level collections like list of lists, meet requirements of [RadomAccessIterator](http://en.cppreference.com/w/cpp/concept/RandomAccessIterator "C++ concepts: RandomAccessIterator"), etc. easily.
 
