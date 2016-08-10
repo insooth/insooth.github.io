@@ -22,7 +22,7 @@ Most of the data we operate on is fixed in the memory, i.e. it is preallocated. 
 What we want to have, are the pools of identical objects (rather than raw memory) and predefined ways to compose such objects. By objects we mean structures with known data layout, i.e. they never define hidden members introduced by `virtual` keyword, or we can predict offsets and sizes of those members. We never allocate (on heap, stack, etc.) _additional_ memory: we can take an object from the pool, or put back object to the pool. That implies following:
 * we know address ranges and addresses of all the objects (i.e. memory) used in our system &mdash; that gives additional debugging possibilities,
 * we link object through pointers which are always valid addresses (memory is prealloacted and never freed during runtime),
-* we do not use subtype polymorphism, thus we eliminate indirect calls through `vtable`s &mdash; we strive to be cache-friendly,
+* we do not use subtype polymorphism, thus we eliminate indirect calls through `vtable`s &mdash; we strive to be cache-friendly (we can even force data alignment),
 * fatal error is raised if we run out of "free" objects in the pool &mdash; we need to carrefully calculate pool sizes and give fallback possibilities (force some resources to be freed, c.f. [Linux kernel out-of-memory handling](http://linux-mm.org/OOM_Killer "OOM Killer") or calls dropping in case of emergency calls).
 
 As an example we model forward traversal list `[head, next]`:
@@ -66,12 +66,32 @@ In case of stateful system we would like to store additional data that is utilis
 
 ## Resources
 
+Resources are not just about the memory. Consider a mutex which is (in fact) piece of allocated memory available at certain address, but it has much more complex semantics that regular allocated memory. What does it mean to copy a mutex? What does it mean to destroy a mutex? When to reclaim the allocated memory? hat is why there is no one simple solution to garbage collecting engine.
+
+Dealing with _regular_ resources is a base that can be reused and extented to resources with extra semantics (system resources typically).
+
 ### Multiple users
+
+Once allocated memory needs to be freed eventually, but the hard part is the timepoint such action shall eventually occur. In the simplest case, there is only one user of memory, its _owner_, who allocates it and deallocates it. In case of multiple users and shared resource, we can force the _last user_ of the memory to reclaim it. How to determine such last user? Most common way to do that is reference counting.
+
+We are not going to allocate reference counter per piece of shared memory. We just embed the counter into the memory which sharing is _anticiapted_.
+
+```c++
+struct resource
+{
+    std::atomic<size_t> counter = 0;
+    // ... some data
+};
+```
+
+Some other solution for single resource and multiple users include feeding each user with a copy of the resource and update the original resource once modified (an implementation of [RCU](https://en.wikipedia.org/wiki/Read-copy-update "Read-copy-update")).
+
 ### Non-contiguous resources
+
 
 ## Rich with types
 
 
 #### About this document
 
-June 19,29,30, 2016 &mdash; Krzysztof Ostrowski
+June 19,29,30;August 10 2016 &mdash; Krzysztof Ostrowski
