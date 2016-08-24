@@ -44,7 +44,7 @@ struct item
 
  private:
     // some data here
-    atomic<item*> next = nullptr; 
+    atomic<item*> next{nullptr}; 
 };
 ```
 
@@ -79,7 +79,7 @@ We are not going to allocate reference counter per piece of shared memory. We ju
 ```c++
 struct resource
 {
-    std::atomic<size_t> counter = 0;
+    std::atomic<size_t> counter{0};
     // ... some data
 };
 ```
