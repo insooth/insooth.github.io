@@ -128,7 +128,7 @@ We gained certain type-level safety for our resource manager `A` that manages po
 ```c++
 struct A
 {
-  // calls A::pool.construct() and transfers ownership to it if no errors
+  // calls A::pool.construct() and transfers ownership to user if no errors
   std::pair<E, std::optional<std::unique_ptr<const T, D>>> take();
 };
 ```
@@ -164,7 +164,9 @@ that mimic "noop" action on the allocated data if it exists.
 
 ## And that's it!
 
-We defined an interface that composes available abstractions and provides acceptable level of type-safety. We allocate resource using object pool, thus we avoid memory fragmentation. We control data mutation, by allowing it only in explicitly defined ways (here in `take`). Type system prevents user from mutating (including memory releasing) of the received data. We use `optional` and model of `Either` to signal errors to the user. Allocated memory ownership is exclusive, once released moves back to the pool.
+We defined an interface that composes available abstractions and provides acceptable level of type-safety. We allocate resource using object pool, thus we avoid memory fragmentation. We control data mutation, by allowing it only in explicitly defined ways (here in `take`). Type system prevents user from mutating (including memory releasing) of the received data. We use `optional` and model of `Either` to signal errors to the user. Allocated memory ownership is exclusive, released memory moves back to the pool.
+
+Note that we can reason about the interface by looking at its functions' signatures. That's definitely an example of a good interface!
 
 #### About this document
 
