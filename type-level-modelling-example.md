@@ -11,23 +11,23 @@ Let's reprase:
 
 The data we pass to the layer above is of type `T` (transformed). The data we receive is of type `S` (source). Following can be observed:
 
-* *software* --> some modularisation (at least dedicated class `A`) will be required,
-* *transforms* --> there must exist at least one function `S -> T`,
-* *relatively small fixed-size data* and *don't want* ... *memory fragmentation* --> `boost::object_pool` fits here well,
-* *have memory management automatic* and *don't want to share data* ... *exclusive ownership* --> `std::unique_ptr` does this,
-* *pass user-defined algorithm that augments* ... *allocated data* --> user passes function of type `T& -> E` where `E` is a type that indicates augumentation operation result,
-* *allocated data* --> our layer will care about memory management,
-* *don't let the user to modify the data explicitly*  --> make it impoossible to modify/release memory outside our layer,
-* *type-level safety* --> trigger compilation error on contract violation where possible,
-* *don't like to throw exceptions* --> `optional` and a model of `Either` (like `std::pair`) to carry errors will be helpful.
+* *software* › some modularisation (at least dedicated class `A`) will be required,
+* *transforms* › there must exist at least one function `S -> T`,
+* *relatively small fixed-size data* and *don't want* ... *memory fragmentation* › `boost::object_pool` fits here well,
+* *have memory management automatic* and *don't want to share data* ... *exclusive ownership* › `std::unique_ptr` does this,
+* *pass user-defined algorithm that augments* ... *allocated data* › user passes function of type `T& -> E` where `E` is a type that indicates augumentation operation result,
+* *allocated data* › our layer will care about memory management,
+* *don't let the user to modify the data explicitly*  › make it impoossible to modify/release memory outside our layer,
+* *type-level safety* › trigger compilation error on contract violation where possible,
+* *don't like to throw exceptions* › `optional` and a model of `Either` (like `std::pair`) to carry errors will be helpful.
 
 ### Data types
 
 We have distilled following data types:
-* `boost::object_pool<T>` to avoid memory fragmentation,
-* `std::unique_ptr<T, D>` to manage objects allocated within object pool (`D` is a custom deleter that will move object back to pool),
+* `boost::object_pool<T>` to avoid memory fragmentation while allocating-releasing resources of type `T`,
+* `std::unique_ptr<T, D>` to manage objects allocated within object pool (`D` is a custom deleter that will move object back to the pool),
 * `std::optional<std::unique_ptr<T, D>>` to wrap allocated resource or signal lack of it,
-* `std::pair<E, std::optional<std::unique_ptr<T, D>>>` to carry status of type `E` along with (possibily) valid resource.
+* `std::pair<E, std::optional<std::unique_ptr<T, D>>>` to carry status value of type `E` along with (possibily) valid resource.
 
 ### Interface
 
