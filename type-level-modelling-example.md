@@ -3,7 +3,7 @@
 
 Let's assume we want to model a piece of software that transforms relatively small fixed-size data fetched from the layer below upon request from layer above. Transformation involves memory allocation for the transformed data. We would like to pass allocated memory to the layer. We don't want to share data between layers, so that we want to model exclusive ownership. We would like to make it possible to pass user-defined algorithm that augments the allocated data, but don't let the user to modify the data explicitly. We want to have memory management automatic. We don't want to suffer from memory fragmentation. We want to achieve type-level safety as much as possible. We don't like to throw exceptions.
 
-Let's reprase:
+Let's rephrase:
 
 ... *software* ... *transforms* *relatively small fixed-size data* ... *request from layer above* ... *memory allocation for the transformed data* ... *pass allocated memory* ... *don't want to share data* ... *exclusive ownership* ... *pass user-defined algorithm that augments* ... *allocated data* ... *don't let the user to modify the data explicitly* ... *have memory management automatic* ... *don't want* ... *memory fragmentation* ... *type-level safety* ... *don't like to throw exceptions*.
 
@@ -11,15 +11,15 @@ Let's reprase:
 
 The data we pass to the layer above is of type `T` (transformed). The data we receive is of type `S` (source). Following can be observed:
 
-* *software* › some modularisation (at least dedicated class `A`) will be required,
-* *transforms* › there must exist at least one function `S -> T`,
-* *relatively small fixed-size data* and *don't want* ... *memory fragmentation* › `boost::object_pool` fits here well,
-* *have memory management automatic* and *don't want to share data* ... *exclusive ownership* › `std::unique_ptr` does this,
-* *pass user-defined algorithm that augments* ... *allocated data* › user passes function of type `T& -> E` where `E` is a type that indicates augumentation operation result,
-* *allocated data* › our layer will care about memory management,
-* *don't let the user to modify the data explicitly*  › make it impoossible to modify/release memory outside our layer,
-* *type-level safety* › trigger compilation error on contract violation where possible,
-* *don't like to throw exceptions* › `optional` and a model of `Either` (like `std::pair`) to carry errors will be helpful.
+* *software* → some modularisation (at least dedicated class `A`) will be required,
+* *transforms* → there must exist at least one function `S -> T`,
+* *relatively small fixed-size data* and *don't want* ... *memory fragmentation* → `boost::object_pool` fits here well,
+* *have memory management automatic* and *don't want to share data* ... *exclusive ownership* → `std::unique_ptr` does this,
+* *pass user-defined algorithm that augments* ... *allocated data* → user passes function of type `T& -> E` where `E` is a type that indicates augumentation operation result,
+* *allocated data* → our layer will care about memory management,
+* *don't let the user to modify the data explicitly* → make it impoossible to modify/release memory outside our layer,
+* *type-level safety* → trigger compilation error on contract violation where possible,
+* *don't like to throw exceptions* → `optional` and a model of `Either` (like `std::pair`) to carry errors will be helpful.
 
 ### Data types
 
