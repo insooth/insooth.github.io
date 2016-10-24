@@ -15,7 +15,7 @@ The data we pass to the layer above is of type `T` (transformed). The data we re
 * *transforms* → there must exist at least one function `S -> T`,
 * *relatively small fixed-size data* and *don't want* ... *memory fragmentation* → `boost::object_pool` fits here well,
 * *have memory management automatic* and *don't want to share data* ... *exclusive ownership* → `std::unique_ptr` does this,
-* *pass user-defined algorithm that augments* ... *allocated data* → user passes function of type `T& -> E` where `E` is a type that indicates augumentation operation result,
+* *pass user-defined algorithm that augments* ... *allocated data* → user passes function of type `T& -> E` where `E` is a type that indicates augmentation operation result,
 * *allocated data* → our layer will care about memory management,
 * *don't let the user to modify the data explicitly* → make it impoossible to modify/release memory outside our layer,
 * *type-level safety* → trigger compilation error on contract violation where possible,
@@ -31,7 +31,7 @@ We have distilled following data types:
 
 ### Interface
 
-We need to figure out how layer above will call us, i.e. we need to define our interface. Since data will be provided upon *request from layer above*, and we need to make it possible to *pass user-defined algorithm that auguments* ... *allocated data*, following minimal interface can be defined inside out layer's scope (let's use `struct A`):
+We need to figure out how layer above will call us, i.e. we need to define our interface. Since data will be provided upon *request from layer above*, and we need to make it possible to *pass user-defined algorithm that augments* ... *allocated data*, following minimal interface can be defined inside out layer's scope (let's use `struct A`):
 
 ```c++
 struct A
@@ -41,7 +41,7 @@ struct A
     std::pair<E, std::optional<std::unique_ptr<T, D>>> take();
 
     template<class F>
-    E augument(std::unique_ptr<T,D>& v, F&& f);
+    E augment(std::unique_ptr<T,D>& v, F&& f);
 };
 ```
 
@@ -106,7 +106,7 @@ public:
 };
 ```
 
-Now, following casuse compilation errors (`p` is of type `std::unique_ptr<const T, D>`):
+Now, following lines cause compilation errors (`p` is of type `std::unique_ptr<const T, D>`):
 
 
 ```c++
@@ -143,15 +143,15 @@ template<class F>
 std::pair<E, std::optional<std::unique_ptr<const T, D>>> take(F&& f);
 ```
 
-and `augument` which can access read-only data directly at the caller side (without transfering ownership):
+and `augment` which can access read-only data directly at the caller side (without transfering ownership):
 
 ```c++
 template<class F>
     requires Callable<F, const T&, E>
-E augument(const std::optional<std::unique_ptr<const T, D>>& v, F&& f);
+E augment(const std::optional<std::unique_ptr<const T, D>>& v, F&& f);
 ```
 
-We have lifted `unique_ptr` into `optional` to make it easier to be used with `take` result type: `augument` will apply `f` to value under `optional` if it is meaningful (i.e. not `none`) ,and will return result of that application (of type `E`) to the caller.
+We have lifted `unique_ptr` into `optional` to make it easier to be used with `take` result type: `augment` will apply `f` to value under `optional` if it is meaningful (i.e. not `none`) ,and will return result of that application (of type `E`) to the caller.
 
 What if user does not want to pre-process while calling `take`? We can define some "interface sugar":
 
