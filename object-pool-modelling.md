@@ -22,10 +22,10 @@ Object pool is typically built from sequence of objects and a data structure tha
 ```
 
 To track the state of the object pointed by `T*` (which can be equal to `nullptr` or valid pointer to the allocated memory) we use `size_t` value that indicates usage count of the object. We define a pair `(object, usage)` of type `std::pair<T*, size_t>`, where its valid values and corresponding states are:
-* `(nullptr, 0)` -- unborn,
-* `(p, 0)` where `p != nullptr` -- free,
-* `(p, n)` where `p != nullptr` and `n > 0` -- occupied,
-* otherwise -- dead.
+* `(nullptr, 0)` → unborn,
+* `(p, 0)` where `p != nullptr` → free,
+* `(p, n)` where `p != nullptr` and `n > 0` → occupied,
+* otherwise → dead.
 
 We would like to be able to fetch first pair that is either in state free (most preffered) or unborn. That requires some ordering relation for `std::pair<T*, size_t>` and data structure that will provide fast access to the pair we would like to use/reuse (move into state free or occupied). We can use max heap (namely `std::make_heap` and `std::pop_heap`) to access the first free or unborn item.
 
