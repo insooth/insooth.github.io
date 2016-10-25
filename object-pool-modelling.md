@@ -43,18 +43,17 @@ We want to make object state transitions thread-safe and model exclusive ownersh
 * `std::shared_ptr<std::pair<std::mutex, std::array<std::pair<T*, size_t>, max>>>` and a custom deleter that will free sequence of not-null `T*` objects,
 * `std::unique_ptr<T, D>` where `T` is a memory from the pool and `D` is a custom deleter that moves back object to the pool.
 
-We can model our pool data as (`C` is a comparator for intervals):
+We can model our pool data as:
 
 ```c++
 using P = std::map<
-   std::pair<size_t, size_t>
+   std::tuple<size_t, size_t>  // lexicographical comparator out-of-the-box
  , std::shared_ptr<
     std::pair<
         std::mutex
       , std::array<std::pair<T*, size_t>, max>
       >
     >
- , C
  >;
 ```
 
@@ -65,5 +64,5 @@ template<class... As>
 std::pair<E, std::optional<std::unique_ptr<T, D>>> construct(As&&...);
 ```
 
-where `D` stores information to which pool put back the returned `T`, at least `std::pair<size_t, size_t>` to navigate in the three. Search for `T*` in tree mapped type is linear, so that `max` value should be kept small. Moving from state free (or unborn which requires memory allocation for `T` object) to occupied is done by dedicated function that locks stored `mutex` and modifies the `array` of objects.
+where `D` stores information to which pool put back the returned `T`, at least `std::tuple<size_t, size_t>` to navigate in the three. Search for `T*` in tree mapped type is linear, so that `max` value should be kept small. Moving from state free (or unborn which requires memory allocation for `T` object) to occupied is done by dedicated function that locks stored `mutex` and modifies the `array` of objects.
 
