@@ -86,7 +86,7 @@ decltype(auto) something = foo();
 
 That requires us to remember that `foo` returns reference, which reduces type inference to type aliasing (where `auto` is just "abbreviated" `A`). That's rather disappointing.
 
-There is way to assure not-null resource under `something` and straight usage of `auto` by changing `foo` result type to `std::reference_wrapper<A>` which is `TriviallyCopyable`, thus works well with type inference through plain `auto` that leads to copying of the value.
+There is way to assure not-null resource under `something` and straight usage of `auto` by changing `foo` result type to `std::reference_wrapper<A>` which is `TriviallyCopyable`, thus works well with type inference through plain `auto` that leads to copying of a value.
 
 ```c++
 // std::reference_wrapper<A> foo();
@@ -100,7 +100,9 @@ We still need to look under the mask to know that we must unwrap the stored refe
 
 ## A case of folding
   
-Let's take an example of folding a sequence of integers that produces sequence of types `T`. Sequences of type `T` are produced by passing integer index `i` to function `get`. Each time we access index `i`, we fetch sequence of `T` values through `get(i)`, and we append it to the sequence produced at previous step `i - 1`. Initial sequence of `T` is empty. Let's model that with `std::accumulate` (left fold):
+Let's take an example of folding a sequence of integers using an action that produces sequence of types `T`. Sequences of type `T` are produced by passing integer index `i` to function `get`.
+
+Each time we access index `i`, we fetch sequence of `T` values through `get(i)`, and we append it to the sequence produced at previous step `i - 1`. Initial sequence of `T` is empty. Let's model that with `std::accumulate` (left fold):
 
 ```c++
 auto indexes = {1, 2, 3, 4, 5};
@@ -120,39 +122,41 @@ auto out =
                     });
 ```
 
-`(1)` fetches sequence of items at given `index`, `(2)` does some memory usage assumptions, `(3)` appends `ts` to `result` (which is `{}` initially), `(4)` moves result to te caller (which will move it as `result` to the next index).
+`(1)` fetches sequence of items at given `index`, `(2)` does some memory usage assumptions, `(3)` appends `ts` to `result` (which is `{}` initially), `(4)` moves result to te caller (which will move it as `result` to action executed for the next index).
 
-Note, that presented code assumes that certain types provide certain semantics, at least:
+Note, that presented code assumes that certain types provide certain semantics, i.e. at least:
 * `(2)` assumes that type of `ts` provides operation `size() -> a`,
 * `(2)` assumes that type of `result` provides operations `reserve(a) -> b` and `size() -> a`,
-* `(2)` assumes that values of type `a` can be added (`+` operation) and output of such operation is of type `a`, 
+* `(2)` assumes that values of type `a` can be added (operation `+`) and output of such operation is of type `a`, 
 * `(3)` assumes that type of `result` provides append-like operation (usually `push_back` or `emplace_back`),
 * `(3)` assumes that `ts` and `result` are containers that store values of equal types,
-* `(3)` assumes that values in `ts` container must be at least copyable
-where `a` and `b` are some types. Besides the above, we can notice that:
-* types of `indexes` and `ts` must be iterable, i.e. `begin` and `end` are valid for them,
-* values of type of `result` must be default constructible with `{}`,
-* `result` and `ts` must be at least copy-constructible and copy-assignable (`accumulate` requires that).
+* `(3)` assumes that values in `ts` container must be at least `Copyable`
+where `a` and `b` are some types.
+
+Besides the above, we can notice that:
+* types of `indexes` and `ts` must be iterable, i.e. `begin` and `end` operations can be applied over them,
+* values of type of `result` must be `DefaultConstructible` with `{}`,
+* `result` and `ts` must be at least `CopyConstructible` and `CopyAssignable` (`accumulate` requires that).
 
 Those assumptions are in fact requirements on types that must be satisfied, otherwise we won't get code compiling.
 
-Our solution seems to be conceptually correct, unfortunately it does not type check. Compiler (GCC 6.1.0 with `-std=c++14`) reports that it was not able to deduce template parameter `_Tp` for us in following expression:
+Our solution seems to be conceptually correct, unfortunately it does not type check. Compiler (GCC 6.1.0 with `-std=c++14`) reports that it was not able to deduce template parameter `_Tp` in the following expression:
 
 ```
 template<class _InputIterator, class _Tp, class _BinaryOperation>
 _Tp std::accumulate(_InputIterator, _InputIterator, _Tp, _BinaryOperation)
 ```
 
-`_Tp` stands here for a type of `result` which has to be the same as a type of `ts`, due to fact that C++ does not support statically typed heterogeneous iterable containers (neither `tuple` nor single-value container `variant` are iterable). Type of `ts` is known from inspecting `get`. We need to help compiler move forward by fixing `_Tp`, that is:
+`_Tp` stands here for a type of `result` which has to be the same as a type of `ts` due to fact that C++ does not support statically typed heterogeneous iterable containers (neither `tuple` nor single-value container `variant` are iterable). Type of `ts` is known from inspecting `get`. We need to help compiler moving forward by fixing `_Tp`, that is:
 
 ```
     std::accumulate(std::begin(indexes), std::end(indexes), R{}
 //                                                          ^~~ here
 ```
 
-where `R` is be described as `using R = decltype(get({}));` solves our type tetris.
+where `R` is be described as `using R = decltype(get({}));`. That solves our type tetris.
 
-Note, that neither fixing result type for accumulate nor lambda argument type:
+Note, that neither fixing result type for `accumulate` nor fixing lambda argument/result type:
 ```
                   , [](R&& result, auto index)
 //                     ^~~ here
@@ -160,7 +164,7 @@ Note, that neither fixing result type for accumulate nor lambda argument type:
                   , [](auto&& result, auto index) -> R
 //                                                   ^~~ here
 ```
-helps compiler. Signature for `accumulate` expects `_BinaryOperation` that does not explicitly state type requirements (like `Callable<_BinaryOperation, _R, _I, R>` where `_R` is any form of decorated `R` (e.g. `R&&`), so that `_I`). Things can change once Concepts get merged into standard. 
+help compiler. Signature for `accumulate` expects `_BinaryOperation` that does not explicitly state type requirements (like `Callable<_BinaryOperation, _R, _I, R>` where `_R` is any form of decorated `R` (e.g. `R&&`), so that `_I`). Things may change once Concepts TS get merged into standard. 
 
 
 #### About this document
