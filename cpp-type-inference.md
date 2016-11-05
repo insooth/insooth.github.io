@@ -86,7 +86,7 @@ decltype(auto) something = foo();
 
 That requires us to remember that `foo` returns reference, which reduces type inference to type aliasing (where `auto` is just "abbreviated" `A`). That's rather disappointing.
 
-There is way to assure not-null resource under `something` and straight usage of `auto` by changing `foo` result type to `std::reference_wrapper<A>` which is `TriviallyCopyable`, thus works well with type inference through plain `auto`.
+There is way to assure not-null resource under `something` and straight usage of `auto` by changing `foo` result type to `std::reference_wrapper<A>` which is `TriviallyCopyable`, thus works well with type inference through plain `auto` that leads to copying of the value.
 
 ```c++
 // std::reference_wrapper<A> foo();
