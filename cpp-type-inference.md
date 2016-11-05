@@ -96,7 +96,7 @@ something.get().foo();
 //       ^~~ ugly unwrapping
 ```
 
-We still need to look under the mask to known that we must unwrap the stored reference. This may be fixed by introducing overloading of `operator.` in future incarnation of C++.
+We still need to look under the mask to know that we must unwrap the stored reference. This may be fixed by introducing overloading of `operator.` in future incarnation of C++.
 
 ## A case of folding
   
