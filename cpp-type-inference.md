@@ -16,7 +16,7 @@ static auto s_commonInterfaceProvider = std::make_shared<VeryLongInterfaceType<S
 
 which is far more readable and does not contain repeated type information.
 
-Use of type inference puts impact on what is possible to be done with certain value, i.e. on its interface or concept it models, rather than on its concrete type. Unfortunately, `auto` does type inference locally, thus is not such powerful we might expect. Here follows some examples of `auto`-inference failures.
+Use of type inference puts impact on what is possible to be done with certain value, i.e. on its interface or concept it models, rather than on its concrete type. Unfortunately, `auto` does type inference locally, thus is not such powerful as we might expect. Here follows some examples of `auto`-inference failures.
 
 ## A case of range
 
@@ -50,7 +50,7 @@ Note that, unlike for references, pointer is inferred. Constness is added implic
 
 ## A case of including
 
-Some sources say that using forward declaration whenever possible, others say that headers shall be self-contained (i.e. order of `#include`s does not matter). Let's consider an interface (file `interface.hpp`):
+Some sources say that using forward declaration whenever possible is a must, others say that headers shall be self-contained (which implies that order of `#include`s does not matter). Let's consider an interface (file `interface.hpp`):
 
 ```c++
 struct A;
