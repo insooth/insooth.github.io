@@ -166,6 +166,11 @@ Note, that neither fixing result type for `accumulate` nor fixing lambda argumen
 ```
 help compiler. Signature for `accumulate` expects `_BinaryOperation` that does not explicitly state type requirements (like `Callable<_BinaryOperation, _R, _I, R>` where `_R` is any form of decorated `R` (e.g. `R&&`), so that `_I`). Things may change once Concepts TS get merged into standard. 
 
+## A note on `Copy`-concepts
+
+Plain old copy is used as a fallback when move operation cannot be perfomed. That will imply that type that is `CopyConstructible` or `CopyAssignable` may be respectively `MoveConstructible` or `MoveAssignable` too. In other words, we may think that `Move` concepts are derived from `Copy` concepts, but that's not true. `Copy` concepts require `Move` concepts to be satisified, i.e. `Copy` concepts are derived from `Move` concepts. That seems to be counter-intuitive, because `Move`-semantics are by default optional and `Copy`-semantics are by default mandatory (but can be disabled).
+
+
 
 #### About this document
 
