@@ -20,7 +20,7 @@ Use of type inference puts impact on what is possible to be done with certain va
 
 ## A case of range
 
-Let's define such a sequence integer indexes. This will not work with C++14:
+Let's define a sequence integer indexes. This will not work with C++14:
 
 ```c++
 auto indexes {1, 2, 3, 4, 5};
