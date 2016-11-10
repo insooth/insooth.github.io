@@ -46,7 +46,7 @@ for (auto i : {"x", "y", "z"}) {}
 
 ```
 
-Note that, unlike for references, pointer is inferred. Constness is added implicitly. To achieve similar effect for references `decltype(auto)` shall be used.
+Note that, unlike for references, pointer is inferred. Constness is added implicitly. To achieve similar effect for references, `decltype(auto)` shall be used.
 
 ## A case of including
 
