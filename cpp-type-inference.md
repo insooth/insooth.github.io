@@ -50,7 +50,7 @@ Note that, unlike for references, pointer is inferred. Constness is added implic
 
 ## A case of including
 
-Some sources say that using forward declaration whenever possible is a must, others say that headers shall be self-contained (which implies that order of `#include`s does not matter). Let's consider an interface (file `interface.hpp`):
+Some sources say that using forward declarations whenever possible is a must, others say that headers shall be self-contained (which implies that order of `#include`s does not matter). Let's consider an interface (file `interface.hpp`):
 
 ```c++
 struct A;
@@ -68,7 +68,7 @@ something->bar();
 // ^~~  error: invalid use of incomplete type 'struct A'
 ```
 
-That's easy to be fixed in early project phase, but may not be so obvious if caused by late refactoring. Compiler reports an errors related to the type which is not visible in our code. Moral of this story is such that publicly exposed header files shall be self-contained.
+That's easy to be fixed in early project phase, but may not be so obvious if caused by late mass refactoring. Compiler reports errors related to the type which is not visible in our code. Moral of this story is such that publicly exposed header files shall be self-contained.
 
 Moreover, we deal implicitly with pointers (`auto` infers pointers correctly), and we can easily crash at dereferencing `something`. Someone can be tempted to fix that by returning reference instead of a pointer. That's really bad idea, consider:
 
@@ -78,15 +78,15 @@ something.foo();
 //       ^~~ null pointers cannot happen (if no hackery done)
 ```
 
-We solved dangerous crash possibility by doing copy of a value returned by `foo`. This is what `auto` for references does. In order to deduce a reference, we need to use:
+We solved dangerous crash possibility by doing copy of a value returned by `foo`. This is what does `auto` for references. In order to deduce a reference, we need to use:
 
 ```c++
 decltype(auto) something = foo();
 ```
 
-That requires us to remember that `foo` returns reference, which reduces type inference to type aliasing (where `auto` is just "abbreviated" `A`). That's rather disappointing.
+That requires us to remember that `foo` returns a reference, which reduces type inference to type aliasing (where `auto` is just "abbreviated" `A`). That's rather disappointing.
 
-There is way to assure not-null resource under `something` and straight usage of `auto` by changing `foo` result type to `std::reference_wrapper<A>` which is `TriviallyCopyable`, thus works well with type inference through plain `auto` that leads to copying of a value.
+There is way to assure not-null resource under `something` and to keep simple usage of `auto` by changing `foo` result type to `std::reference_wrapper<A>` which is `TriviallyCopyable`, thus works well with type inference through plain `auto` that leads to copying of a value.
 
 ```c++
 // std::reference_wrapper<A> foo();
@@ -96,13 +96,13 @@ something.get().foo();
 //       ^~~ ugly unwrapping
 ```
 
-We still need to look under the mask to know that we must unwrap the stored reference. This may be fixed by introducing overloading of `operator.` in future incarnation of C++.
+We still need to look under the mask to figure out that we must unwrap stored reference (compiler will suggest that). That may be fixed by enabling overloading of `operator.` in future incarnation of C++.
 
 ## A case of folding
   
-Let's take an example of folding a sequence of integers using an action that produces sequence of types `T`. Sequences of type `T` are produced by passing integer index `i` to function `get`.
+Let's take an example of folding a sequence of integers using an action that produces sequence of types `T`. Sequence of type `T` is produced by passing integer index `i` to function `get`.
 
-Each time we access index `i`, we fetch sequence of `T` values through `get(i)`, and we append it to the sequence produced at previous step `i - 1`. Initial sequence of `T` is empty. Let's model that with `std::accumulate` (left fold):
+Each time we access index `i`, we fetch sequence of `T` values through `get(i)` and we append it to the sequence produced at the previous step `i - 1`. Initial sequence of `T` is empty. Let's model that with `std::accumulate` (left fold):
 
 ```c++
 auto indexes = {1, 2, 3, 4, 5};
@@ -128,7 +128,7 @@ Note, that presented code assumes that certain types provide certain semantics, 
 * `(2)` assumes that type of `ts` provides operation `size() -> a`,
 * `(2)` assumes that type of `result` provides operations `reserve(a) -> b` and `size() -> a`,
 * `(2)` assumes that values of type `a` can be added (operation `+`) and output of such operation is of type `a`, 
-* `(3)` assumes that type of `result` provides append-like operation (usually `push_back` or `emplace_back`),
+* `(3)` assumes that type of `result` provides append-like operation (like `push_back` or `emplace_back`),
 * `(3)` assumes that `ts` and `result` are containers that store values of equal types,
 * `(3)` assumes that values in `ts` container must be at least `Copyable`
 where `a` and `b` are some types.
@@ -138,7 +138,7 @@ Besides the above, we can notice that:
 * values of type of `result` must be `DefaultConstructible` with `{}`,
 * `result` and `ts` must be at least `CopyConstructible` and `CopyAssignable` (`accumulate` requires that).
 
-Those assumptions are in fact requirements on types that must be satisfied, otherwise we won't get code compiling.
+Those assumptions are in fact requirements on the types that must be satisfied, otherwise we won't get code compiling.
 
 Our solution seems to be conceptually correct, unfortunately it does not type check. Compiler (GCC 6.1.0 with `-std=c++14`) reports that it was not able to deduce template parameter `_Tp` in the following expression:
 
@@ -147,7 +147,7 @@ template<class _InputIterator, class _Tp, class _BinaryOperation>
 _Tp std::accumulate(_InputIterator, _InputIterator, _Tp, _BinaryOperation)
 ```
 
-`_Tp` stands here for a type of `result` which has to be the same as a type of `ts` due to fact that C++ does not support statically typed heterogeneous iterable containers (neither `tuple` nor single-value container `variant` are iterable). Type of `ts` is known from inspecting `get`. We need to help compiler moving forward by fixing `_Tp`, that is:
+`_Tp` stands here for a type of `result` which has to be the same as a type of `ts` due to fact that C++ does not support statically typed heterogeneous iterable containers (neither `tuple` nor single-value container `variant` are iterable). Type of `ts` is known from inspecting `get`. We need to help compiler to move forward by fixing `_Tp`, that is:
 
 ```
     std::accumulate(std::begin(indexes), std::end(indexes), R{}
@@ -168,8 +168,7 @@ help compiler. Signature for `accumulate` expects `_BinaryOperation` that does n
 
 ## A note on `Copy`-concepts
 
-Plain old copy is used as a fallback when move operation cannot be perfomed. That will imply that type that is `CopyConstructible` or `CopyAssignable` may be respectively `MoveConstructible` or `MoveAssignable` too. In other words, we may think that `Move` concepts are derived from `Copy` concepts, but that's not true. `Copy` concepts require `Move` concepts to be satisified, i.e. `Copy` concepts are derived from `Move` concepts. That seems to be counter-intuitive, because `Move`-semantics are by default optional and `Copy`-semantics are by default mandatory (but can be disabled).
-
+Plain old copy is used as a fallback when move operation cannot be perfomed. That will imply that type that is `CopyConstructible` or `CopyAssignable` may be respectively `MoveConstructible` or `MoveAssignable` too. In other words, we may think that `Move` concepts are derived from `Copy` concepts, but that's not true. `Copy` concepts require `Move` concepts to be satisified, i.e. `Copy` concepts are derived from `Move` concepts. That seems to be counter-intuitive, because `Move`-semantics are by default optional and `Copy`-semantics are by default mandatory (but can be disabled), but that's the way things are (and what actually makes `std:move` working).
 
 
 #### About this document
