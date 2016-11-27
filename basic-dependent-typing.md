@@ -25,7 +25,7 @@ How to inform type system about that? Example solutions follow.
 
 # Runtime assertion
 
-Putting a runtime assertion is what cautious people usually do. We want to assure following holds:
+Putting a runtime assertion is what cautious people usually do. It has nothing to do with type system and disappears if `-DNDEBUG` is passed to compiler. We want to assure following holds:
 
 ```
 d + p <= INT_MAX
