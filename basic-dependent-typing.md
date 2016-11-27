@@ -18,9 +18,8 @@ int transfer()
 
 Note that, minimum value of `unsigned` is `0`, but its maximum value is twice as big as it is for `int`. That implies possible overflow on addition and loss of data due to cast in `return`. However... we go with this assumption:
 
-```
-Result will never overflow, since `p + d` will never be greater than maximum value of `p` (i.e. `int`).
-```
+
+> Result will never overflow, since `p + d` will never be greater than maximum value of `p` (i.e. `int`).
 
 How to inform type system about that? Example solutions follow.
 
