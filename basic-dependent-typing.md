@@ -1,7 +1,7 @@
 
 # Basic dependent typing in example
 
-Using fundamental types to do "simple things simple" fits very well in the most of cases . Unfortunately, if we assume that our application uses only subset of values carried by given fundamental type, we are like to get warning from the compiler. We shall take that warning seriously.
+Using fundamental types to do "simple things simple" fits very well in the most of cases . Unfortunately, if we assume that our application uses only a subset of values carried by given fundamental type, we are likely to get warning from the compiler. We shall take that warning seriously.
 
 Cosider following code:
 
@@ -16,7 +16,7 @@ int transfer()
 }
 ```
 
-Note that, minimum value of `unsigned` is `0`, but its maximum value is twice as big as it is for `int`. That implies possible overflow on addition and loss of data due to cast in `return`. However... we go with this assumption:
+Note that, the minimum value of `unsigned` is `0`, but its maximum value is twice as big as it is for `int`. That implies possible overflow on addition and loss of data due to cast in `return`. However, we ship code with this assumption in mind:
 
 
 > Result will never overflow, since `p + d` will never be greater than maximum value of `p` (i.e. `int`).
@@ -50,7 +50,7 @@ Assertion shall be put before doing actual computations.
 
 # Expand domain
 
-Lift computations to common type and check before cast in `return` is another option. Type that represents values domain of `int` and `unsigned` completely is `std::int64_t` (from `<cstdint>`) provided that `int` is `std::in32_t` and `unsigned` is `std::uint32_t`.
+Lift computations to common type and check before cast in `return` is another option. Type that represents values' domain of `int` and `unsigned` fully is `std::int64_t` (from `<cstdint>`) provided that `int` is `std::int32_t` and `unsigned` is `std::uint32_t`.
 
 Lifted `transfer` looks as follows:
 
@@ -65,7 +65,7 @@ int transfer()
 }
 ```
 
-and may generate false alarm on data loss (cast from `std::in64_t` to "smaller" `int`).
+and may generate false alarm on data loss (cast from `std::int64_t` to "smaller" `int`).
 
 # Lift types
 
@@ -78,8 +78,8 @@ Let's introduce custom types for `p` and `d`, and change result type accordingly
 ```c++
 auto transfer()
 {
-  const auto d = offset();
-  const auto p = position();
+  const auto d = offset();    // offset() -> Offset
+  const auto p = position();  // position() -> Position
 
   return p + d;
 }
