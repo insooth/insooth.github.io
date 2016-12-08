@@ -1,7 +1,7 @@
 
 # Basic dependent typing
 
-Using fundamental types to do "simple things simple" fits very well in the most of cases . Unfortunately, if we assume that our application uses only a subset of values carried by given fundamental type, we are likely to get warning from the compiler. We shall take that warning seriously.
+Using fundamental types to do "simple things simple" fits very well in the most of cases. Unfortunately, if we assume that our application uses only a subset of values carried by given fundamental type, we are likely to get warning from the compiler. We shall take that warning seriously.
 
 Cosider following code:
 
