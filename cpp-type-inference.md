@@ -164,7 +164,7 @@ Note, that neither fixing result type for `accumulate` nor fixing lambda argumen
                   , [](auto&& result, auto index) -> R
 //                                                   ^~~ here
 ```
-help compiler. Signature for `accumulate` expects `_BinaryOperation` that does not explicitly state type requirements (like `Callable<_BinaryOperation, _R, _I, R>` where `_R` is any form of decorated `R` (e.g. `R&&`), so that `_I`). Things may change once Concepts TS get merged into standard. 
+help compiler. Signature for `accumulate` expects `_BinaryOperation` that does not explicitly state type requirements (like `Callable<_BinaryOperation, _R, _I, R>` where `_R` is any form of decorated `R` (e.g. `R&&`), so that `_I`). Things may change once Concepts TS gets merged into standard. 
 
 ## A note on `Copy`-concepts
 
