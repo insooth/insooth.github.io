@@ -62,7 +62,7 @@ auto r = query(E::Alice | E::Bob);
 
 ## Hide
 
-Through explicit `bitmask` exposed in the interface we shift our selection algorithm to the user, thus making user responsible for combining a **valid** mask. Such a mask is later on split into a sequence of values in the body of `query` using another bit mask operations. That's pretty much of bit twiddling. Can we just pass explicitly a sequence of values, so that we eliminate mask combining and recovering?
+Through explicit `bitmask` exposed in the interface we shift our selection algorithm to the user, thus we make user responsible for combining a **valid** mask. Such a mask is later on split into a sequence of values in the body of `query` using another bit mask operations. That's pretty much of bit twiddling. Can we just pass explicitly a sequence of values, so that we eliminate mask combining and recovering?
 
 ### Cul-de-sac
 
