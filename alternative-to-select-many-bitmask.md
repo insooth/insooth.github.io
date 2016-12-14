@@ -23,7 +23,7 @@ and then combine them to select many properties at once:
 auto r = query(GET_BITMASK_ALICE | GET_BITMASK_BOB);
 ```
 
-Presented above approach is hard to extend and easy to break, moreover relies on naming conventions that compiler simply does not take into account. Our interface is broken by design. Let's try to fix it.
+Presented above approach is hard to extend and easy to break, moreover it relies on naming conventions that compiler simply does not take into account. Our interface is broken by design. Let's try to fix it.
 
 ## Classify
 
