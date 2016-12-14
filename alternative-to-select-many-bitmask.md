@@ -73,7 +73,7 @@ R query(std::vector<E>&&);
 ```
 We will (probably) allocate small buffer on the heap and then release it quickly, thus increase memory fragmentation.
 
-## Proxy without a type
+### Proxy without a type
 
 C++11 introduces handy proxy of non-deducible type to array of items of unspecified storage that we can use here:
 
