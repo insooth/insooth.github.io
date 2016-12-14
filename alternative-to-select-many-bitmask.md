@@ -101,7 +101,7 @@ which leads to variadic template with some bounds on parameters that disables `q
 
 
 ```c++
-struct S {};  // out "base class" that classifies types
+struct S {};  // our "base class" that classifies types
 
 template<class... Ts>
 auto query()
