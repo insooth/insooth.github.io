@@ -23,7 +23,7 @@ and then combine them to select many properties at once:
 auto r = query(GET_BITMASK_ALICE | GET_BITMASK_BOB);
 ```
 
-Presented above approach is hard to extend and easy to break, moreover it relies on naming conventions that compiler simply does not take into account. Our interface is broken by design. Let's try to fix it.
+Presented above interface design is hard to extend and easy to break. Moreover it relies on naming conventions that compiler simply does not take into account. Our interface is broken by design. Let's try to fix it.
 
 ## Classify
 
@@ -40,7 +40,7 @@ enum class E : std::uint32_t
 };
 ```
 
-which makes possible to mark the range of possible values:
+Enumeration makes it possible to define a range of possible values:
 
 ```c++
 R query(std::underlying_type_t<E> bitmask);
@@ -54,7 +54,7 @@ std::underlying_type_t<E> operator| (E lhs, E rhs)
 }
 ```
 
-We do little to the types (we cannot mix enumerations of different underlying type), thus caller side looks just a little bit better than before (old way of invocation is still possible):
+We do little to the types (i.e. caller cannot mix enumerations of different underlying type), thus caller side looks just a little bit better than before (old way of invocation is still possible):
 
 ```c++
 auto r = query(E::Alice | E::Bob);
@@ -75,7 +75,7 @@ We will (probably) allocate small buffer on the heap and then release it quickly
 
 ### Proxy without a type
 
-C++11 introduces handy proxy of non-deducible type to array of items of unspecified storage that we can use here:
+C++11 introduces handy proxy of non-deducible type to an array of items of unspecified storage, that we can use here:
 
 ```c++
 R query(std::initializer_list<E>);
@@ -91,13 +91,13 @@ which gives us much cleaner interface.
 
 ## Lift
 
-With `std::initializer_list<E>` we still require memory buffer to store passed sequence of items. Ideally, our select many can be done during compilation time. We would like to make it possible to use interface as follows:
+With `std::initializer_list<E>` we still require memory buffer to store passed sequence of items. It would be great to apply select many completely during compilation time. We would like to make it possible to use following interface:
 
 ```c++
 auto r = query<Alice, Bob>();
 ```
 
-which leads to variadic template with some bounds on parameters that disables `query` if any of passed types is not derived (no runtime polymorphism intended!) from type `S`:
+which implementation leads to use of variadic template with some bounds checks on parameters that disables `query` if any of passed types is not derived (no runtime polymorphism intended!) from type `S`:
 
 
 ```c++
@@ -118,7 +118,7 @@ struct Alice : S, std::integral_type<std::uint32_t, 0x10000000> {};
 struct Bob   : S, std::integral_type<std:uint32_t, 0x800000> {};
 ```
 
-We have added stronger typing to our application by use of loosely-coupled unique types classified by custom tag (here it is empty base class `S`). We can easily extend the set of available "enumerations", they can even carry the same value (which is not possible with `enum`). To add another set of "enumerations" we create new tag type and types that derive from it. Compiler detects misuse for us, no runtime is involved. The only precondition is that we need to know what we want to select beforehand, at the compilation time.
+We have added stronger typing to our application by use of loosely-coupled unique types classified by custom tag (here it is empty base class `S`). We can easily extend the set of available "enumerations", they can even carry the same value (which is not possible with `enum`). To add another set of "enumerations" we create new tag type and types that derive from it. Compiler detects misuses for us, no runtime is involved. The only precondition is that we need to know what we want to select beforehand, at the compilation time.
 
 #### About this document
 
