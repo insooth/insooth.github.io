@@ -97,7 +97,7 @@ With `std::initializer_list<E>` we still require memory buffer to store passed s
 auto r = query<Alice, Bob>();
 ```
 
-which implementation leads to use of variadic template with some bounds checks on parameters that disables `query` if any of passed types is not derived (no runtime polymorphism intended!) from type `S`:
+which implementation leads to use of variadic template with some bounds checks on parameters that disables `query` if at least one of passed types is not derived (no runtime polymorphism intended!) from type `S`:
 
 
 ```c++
