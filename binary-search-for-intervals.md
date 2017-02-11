@@ -17,7 +17,7 @@ template< class ForwardIt, class T, class Compare >
 bool binary_search( ForwardIt first, ForwardIt last, const T& value, Compare comp );
 ```
 
-where the former calls latter with comparision function object that satisfies [`Compare`](http://en.cppreference.com/w/cpp/concept/Compare) concept effectively equal to [`std::less<>`](http://en.cppreference.com/w/cpp/utility/functional/less) (see note below).
+where the former calls latter with comparision function object that satisfies [`Compare`](http://en.cppreference.com/w/cpp/concept/Compare) concept, effectively equal to [`std::less<>`](http://en.cppreference.com/w/cpp/utility/functional/less) (see note below).
 
 ### Range
 
