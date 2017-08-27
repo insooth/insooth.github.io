@@ -410,7 +410,7 @@ We have to inspect the type of the action passed in the constructor in order to 
 
 ```c++
 std::get< action_type<arg0_type<F>> >(actions) = f;
-//        ^^^^^^^^^^^^^^^^^^^^^^^^^              ^~~ object of type F convertible to the generated action type
+//        ^^^^^^^^^^^^^^^^^^^^^^^^^              ^~~ is of type F convertible to the generated action type
 ```
 
 We need to apply that algorithm to all the objects passed in the constructor. This will not compile in C++14:
