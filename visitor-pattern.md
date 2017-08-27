@@ -55,7 +55,7 @@ struct B : A
 
 B b;        // obvious thing: "static" type of `b` is B
 
-A& x = b;   // compiler assigns `x` type of A&, although "real" type of `x` is B
+A& x = b;   // compiler assigns `x` the type of A&, although the "real" type of `x` is B
 
 // value of type B is described by the OTHER type (here it is the A
 // which is the supertype (base class) of the B) -- that is the whole
@@ -105,7 +105,7 @@ B b;
 
 A& x = b;
 
-x.name();   // late binding: calls B::name(), even if type of `x` is A
+x.name();   // late binding: calls B::name(), even if the type of `x` is A
 
 x.choose(); // early binding: error: no such function A::choose()
 
@@ -116,7 +116,7 @@ C c;
 
 B z = c;    // wrong: `z` is not polymorphic, `z` is just a part of `c` object's memory
 
-z.foo();   // early binding: calls B::foo() *NOT* C::foo(), `c` type has been upcasted to B
+z.foo();   // early binding: calls B::foo() *NOT* C::foo(), the `c` type has been upcasted to B type
 ```
 
 Through the use of a `virtual` member function we can access the actual object having a polymorphic handle to it. That is called the single dispatch on `this` pointer (dispatch always happens during runtime). The `this` pointer must be adjusted to match the actual object pointed by the polymorphic handle, and the required member function defined for the determined object must be found and bound. All that happens during runtime, and all that has its costs.
@@ -142,7 +142,7 @@ struct Visitor
   void operator()(C& c) { /* action for C */ }
 
   // the else-path (unsupported object) is a compile error,
-  // instead of a runtime assert as in the naïve solution
+  // instead of a runtime assert as it was in the naïve solution
 };
 ```
 
@@ -410,7 +410,7 @@ We have to inspect the type of the action passed in the constructor in order to 
 
 ```c++
 std::get< action_type<arg0_type<F>> >(actions) = f;
-//        ^^^^^^^^^^^^^^^^^^^^^^^^^              ^~~ of type F convertible to generated action type
+//        ^^^^^^^^^^^^^^^^^^^^^^^^^              ^~~ object of type F convertible to the generated action type
 ```
 
 We need to apply that algorithm to all the objects passed in the constructor. This will not compile in C++14:
