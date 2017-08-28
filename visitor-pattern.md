@@ -63,7 +63,7 @@ A& x = b;   // compiler assigns `x` the type of A&, although the "real" type of 
 
 choice(x);  // calls choice( A &)
 
-// `x` is "dynamically" polymorphic handle to *ANY* object derived from A
+// `x` is a "dynamically" polymorphic handle to *ANY* object derived from A
 
 ```
 
