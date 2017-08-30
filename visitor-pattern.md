@@ -301,7 +301,7 @@ The `action_type` data type is a parametrically polymorphic type, so that it can
 
 ```c++
 template<class... Fs>
-Visitor(Fs... fs)
+Visitor(Fs&&... fs)
 {
     static_assert(are_actions_allowed<visitable_types, Fs...>::value
                 , "Unexpected action passed");
@@ -389,7 +389,7 @@ We are done with user-input validation required in the constructor. It is the ti
 
 ```c++
 template<class... Fs>  // types Fs... are deduced from the passed arguments
-Visitor(Fs... fs)
+Visitor(Fs&&... fs)
 {
   static_assert(are_actions_allowed<visitable_types, Fs...>::value
               , "Unexpected action passed");
@@ -506,7 +506,7 @@ auto operator()(T& t)
 
 ## Full example
 
-Live code is available on [Coliru](http://coliru.stacked-crooked.com/a/75e79c330de5facf).
+Live code is available on [Coliru](http://coliru.stacked-crooked.com/a/bb080b7856cdd29f).
 
 #### About this document
 
