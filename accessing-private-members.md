@@ -1,13 +1,13 @@
 # Accessing inaccessible object members
 
 
-It may be hard to imagine how interesting can an ordinary class template instantiation be. For instance, is that really possible that sample code like this:
+It may be hard to imagine how interesting can be an ordinary class template instantiation. For example, is that really possible that sample code like this:
 
 ```c++
 template class assigner<Mem, &A::m>;
 ```
 
-has just run an algorithm that generates a set of tools to access the *private* member `m` of class `A`? Yes it is! This article explores the ideas originally published [here](http://github.com/hliberacki/cpp-member-accessor) that use explicit template instantiation to trigger custom algorithms.
+has just run an algorithm that generates a set of tools to access the *private* member `m` of a class `A`? Yes it has! This article explores the ideas originally published [here](http://github.com/hliberacki/cpp-member-accessor) where explicit template instantiation is used to trigger custom algorithms.
 
 ## Use case
 
@@ -28,7 +28,7 @@ Design of a class `A` does not enable it for testing in any way. Compiler refuse
 decltype(&A::m);  // error: 'int A::m' is private within this context
 ```
 
-That happens, even so [`decltype`](http://en.cppreference.com/w/cpp/language/expressions#Unevaluated_expressions) operates in the unevaluated contexts &mdash; it *queries the compile-time properties of its operand*. User can define a variable of type that matches `A` member, e.g.:
+That happens, even so [`decltype`](http://en.cppreference.com/w/cpp/language/expressions#Unevaluated_expressions) operates in the unevaluated contexts &mdash; it *queries the compile-time properties of its operand*. User can define a variable of a type that matches the type of an `A`'s private member, e.g.:
 
 ```c++
 using type = void (A::*)();
@@ -36,7 +36,7 @@ using type = void (A::*)();
 type f;  // compiles fine!
 ```
 
-but is not allowed to reference inaccessible items in the `A` class, code like `type f = &A::foo;` generates suitable compilation error. We definitely cannot create an object that references `private` class member. But, surprisingly, there is nothing against instantiating a template that explicitly references private data. Let's try with:
+but is not allowed to reference inaccessible members in the `A` class, code like `type f = &A::foo;` generates well-known compilation error. We definitely cannot create an object that references `private` object member. But, surprisingly, there is nothing against instantiating a template that explicitly references private data. Let's try with:
 
 ```c++
 template<int (A::*)> struct Y {};
@@ -54,7 +54,7 @@ but
 template class Y<&A::m>;  // explicit instantiation is OK!
 ```
 
-We can use this property to store the member (function) pointer to the private data somewhere in the memory during template explicit instantiation. Required memory chunk must be available outside the function scope (i.e. where the explicit instantiation is located), thus it shall be `static`. We need to solve following type tetris:
+We can use this property to store the member (function) pointer to the private data somewhere in the memory during explicit template instantiation. The required memory chunk that will keep the value must be available outside the function scope (i.e. where the explicit instantiation code is located), thus it shall be `static`. We need to solve following type tetris:
 
 ```c++
 template<int (A::*)>
@@ -68,14 +68,14 @@ struct Y
 
 ### Type description
 
-Let's start by wrapping explicit member types into clean abstraction:
+Let's start by wrapping explicit member types into a clean abstraction:
 
 ```c++
 struct MemFun { using type = void (A::*)(); };  // member function pointer
 struct Mem    { using type = int  (A::*);  };   // member pointer
 ```
 
-that can be later lifted into an abstraction that works for any class an any member type:
+that can be later lifted into an abstraction that works for any class and any member type:
 
 ```c++
 template<class R, class C, class... Ts>
@@ -91,7 +91,7 @@ struct Mem
 };
 ```
 
-`Mem` or `MemFun` is passed to `Y` that accesses nested type, and expects member (function) pointer of the respective type:
+`Mem` or `MemFun` is passed to `Y` that accesses the nested `type`, and expects a member (function) pointer of the respective type:
 
 ```c++
 template<class T, typename T::type P>
@@ -110,7 +110,7 @@ template class Y<
 
 ```
 
-Unfortunately, trying to call stored member function pointer against object of type `A` yields well-known error:
+Unfortunately, trying to call the stored member function pointer against object of type `A` yields well-known error:
 
 ```c++
 A a;
@@ -179,11 +179,11 @@ A a;
 (a.* Proxy<MemFun<void, A>>::value)();
 ```
 
-calls *private* member function `A::foo`!
+we call *private* member function `A::foo`!
 
 ### Uniqueness
 
-Astute reader probably noticed already that generating proxies for two or more members matching the same type does not lead to the expected behaviour. That is, following will overwrite the memory chunk that stores the member (function) pointer to `A::foo` with `A::bar`:
+Astute reader probably noticed already that generating proxies for two or more members matching the same type does not lead to the expected behaviour. That is, following example code will overwrite the memory chunk that stores the member function pointer to `A::foo` with member function pointer to `A::bar`:
 
 ```c++
 template class Y<MemFun<void, A>, &A::foo>;
