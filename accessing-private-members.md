@@ -267,3 +267,12 @@ A a;
 ### Live code
 
 Code available on [Coliru](http://coliru.stacked-crooked.com/a/a2ceb2bf20b91eb0).
+
+
+
+#### About this document
+
+September 11, 2017 &mdash; Krzysztof Ostrowski
+
+
+
