@@ -231,7 +231,7 @@ class B
 
 ## Customisation
 
-It may happen that some of the derived types would like to override, or compose with, the passed initialisation `action`. To enable that, `B` class will define a private `initialise` interface that is able to take an object of any [`Callable`](http://en.cppreference.com/w/cpp/concept/Callable) type convertible to the required `action` type. Default implementation of the `initialise` member function in the `B` class will simply call that function against the `action`. User may "override" `initialise` in the derived type `D` by simply specifying it again as a *public* member function. No `virtual` member functions are in use. So called "static polymorphism" is realised solely through use of the [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) idiom.
+It may happen that some of the derived types would like to override, or compose with, the passed initialisation `action`. To enable that, `B` class will define a private `initialise` interface that is able to take an object of any [`Callable`](http://en.cppreference.com/w/cpp/concept/Callable) type convertible to the required `action` type. Default implementation of the `initialise` member function in the `B` class will simply call that function against the `action`. User may "override" `initialise` in the derived type `D` by simply specifying it again as a *public* member function. No `virtual` member functions are in use. So called "static polymorphism" is realised solely through the use of the [CRTP](https://en.wikipedia.org/wiki/Curiously_recurring_template_pattern) idiom.
 
 
 ```c++
