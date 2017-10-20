@@ -469,7 +469,7 @@ auto operator()(T& t)
         , void
         >
 {
-/...
+// ...
 ```
 *and* by providing a fallback function call operator which is impossible to be used by the user:
 
