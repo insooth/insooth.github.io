@@ -1,7 +1,7 @@
 
 # Producer-consumer with buffer swapping
 
-In the classic [producer-consumer problem](https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem) two threads of execution (i.e. the producer and the consumer) modify concurrently a shared resource, in this case it is a buffer for the items produced. It is highly possible that the producer would push new items to the buffer while consumer removes some of them. Such race condition leads to unpredictable state of the shared buffer resource.
+In the classic [producer-consumer problem](https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem) two threads of execution (i.e. the producer and the consumer) modify concurrently a shared resource, in this case it is a buffer for the items produced. It is highly possible that the producer would push new items to the buffer while consumer is being removing some of them. Such race condition leads to unpredictable state of the shared buffer resource.
 
 
 We can get rid of the unpleasant race condition by applying synchronisation mechanisms (like `std::mutex`) to the shared resource. That is, both producer and consumer shall lock the resource before attempting to modify it. That works perfectly, but has at least one great disadvantage: it completely freezes the producer thread for the time of items' consumption. If the consumer processes items sequentially by applying a custom procedure of unknown/varying complexity, all the items producer generates in the meantime are lost irrevocably.
