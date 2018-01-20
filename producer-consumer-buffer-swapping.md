@@ -41,7 +41,7 @@ class Mailbox
   }
 
   template<class F>
-  //  requires Callable<F, Item&>
+  //  requires Callable<F, Item&, void>
   void consume(F f)                 // -- accessed by the consumer thread
   {
     {
@@ -75,7 +75,7 @@ class Mailbox
 {
 ...
   template<class F>
-  //  requires Callable<F, Item&>
+  //  requires Callable<F, Item&, void>
   void consume(F f)                 // -- accessed by the consumer
   {
     {
