@@ -1,6 +1,10 @@
 
 # Producer-consumer with buffer swapping
 
+NOTE: Intention of this article is NOT to provide the reader with the yet another implementation of the producer-consumer queue, but to highlight the importance of understanding the cost of synchronisation and to demonstrate an example cost minimisation technique. Use [Boost.Lockfree](http://www.boost.org/doc/libs/1_66_0/doc/html/lockfree.html) or an already exisiting well-tested code if looking for an ready-to-use implementation of the producer-consumer's problem solution.
+
+----
+
 In the classic [producer-consumer problem](https://en.wikipedia.org/wiki/Producer%E2%80%93consumer_problem) two threads of execution (i.e. the producer and the consumer) modify concurrently a shared resource, in this case it is a buffer for the items produced. It is highly possible that the producer would push new items to the buffer during active remove operation started by the consumer. Such race condition leads to unpredictable state of the shared buffer resource.
 
 
