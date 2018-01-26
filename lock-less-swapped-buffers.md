@@ -1,7 +1,7 @@
 
 # Lock less with swapped buffers
 
-NOTE: Intention of this article is NOT to provide the reader with the yet another implementation of the producer-consumer queue, but to highlight the importance of understanding the cost of synchronisation and to demonstrate an example cost minimisation technique. Use [Boost.Lockfree](http://www.boost.org/doc/libs/1_66_0/doc/html/lockfree.html) or an already exisiting well-tested code if looking for an ready-to-use implementation of the producer-consumer's problem solution.
+NOTE: Intention of this article is NOT to provide the reader with the yet another implementation of the producer-consumer queue, but to highlight the importance of understanding the cost of synchronisation and to demonstrate an example cost minimisation technique. Use [Boost.Lockfree](http://www.boost.org/doc/libs/1_66_0/doc/html/lockfree.html) or an already exisiting well-tested code if looking for a ready-to-use implementation of the producer-consumer's problem solution.
 
 ----
 
