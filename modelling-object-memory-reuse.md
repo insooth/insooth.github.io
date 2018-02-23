@@ -66,3 +66,9 @@ std::pair<E, std::optional<std::unique_ptr<T, D>>> construct(const K& k, As&&...
 
 where `D` stores information to which pool put back the returned `T`, at least `std::tuple<size_t, size_t>` (here aliased into `K`) to navigate in the three. Search for `T*` in tree mapped type is linear, so that `max` value should be kept small. Moving from state free (or unborn which requires memory allocation for `T` object) to occupied is done by dedicated function that locks stored `mutex` and modifies the `array` of objects.
 
+
+#### About this document
+
+Xyz 0, 0000 -- Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
