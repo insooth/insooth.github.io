@@ -126,3 +126,5 @@ Type-rich designs that utilise blessed split tend to be easier to use and mainta
 #### About this document
 
 May 6, 2016 -- Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
