@@ -47,3 +47,5 @@ TODO
 #### About this document
 
 February 23, 2018 &mdash; Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
