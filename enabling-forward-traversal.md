@@ -226,3 +226,4 @@ void foo(const std::vector<T>& v)
 
 May 30, 2016 &mdash; Krzysztof Ostrowski
 
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
