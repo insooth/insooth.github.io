@@ -124,3 +124,4 @@ We have added stronger typing to our application by use of loosely-coupled uniqu
 
 December 14, 2016 &mdash; Krzysztof Ostrowski
 
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
