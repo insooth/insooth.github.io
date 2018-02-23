@@ -143,3 +143,5 @@ We've done basic dependent typing in C++ and lifted runtime assertion into compi
 #### About this document
 
 November 27, 2016 &mdash; Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
