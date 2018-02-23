@@ -169,3 +169,4 @@ Live code is [available on Coliru](http://coliru.stacked-crooked.com/a/5dfd6c6fe
 
 January 27;February 11, 2017 &mdash; Krzysztof Ostrowski
 
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
