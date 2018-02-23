@@ -174,3 +174,5 @@ Plain old copy is used as a fallback when move operation cannot be perfomed. Tha
 #### About this document
 
 November 5, 2016 &mdash; Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
