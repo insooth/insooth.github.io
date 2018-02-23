@@ -274,5 +274,7 @@ Code available on [Coliru](http://coliru.stacked-crooked.com/a/a2ceb2bf20b91eb0)
 
 September 11, 2017 &mdash; Krzysztof Ostrowski
 
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
+
 
 
