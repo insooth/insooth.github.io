@@ -511,3 +511,5 @@ Live code is available on [Coliru](http://coliru.stacked-crooked.com/a/bb080b785
 #### About this document
 
 August 27, 2017 &mdash; Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
