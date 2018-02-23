@@ -171,3 +171,5 @@ Note that we can reason about the interface by looking at its functions' signatu
 #### About this document
 
 October 24, 2016 &mdash; Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
