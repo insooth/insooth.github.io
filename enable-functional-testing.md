@@ -38,3 +38,5 @@ Systems enabled for functional testing are easy to measure.
 #### About this document
 
 August 13, 2016 &mdash; Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
