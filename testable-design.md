@@ -276,3 +276,5 @@ compile it, and then link against shared library with tested code that has origi
 #### About this document
 
 June 8-16, 2016 -- Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
