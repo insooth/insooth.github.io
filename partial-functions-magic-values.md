@@ -86,3 +86,4 @@ This may be seen as a breaking change to the interface, but it is worth to be ap
 
 May 7, 2016 -- Krzysztof Ostrowski
 
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
