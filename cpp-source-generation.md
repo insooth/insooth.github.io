@@ -89,3 +89,4 @@ Invoke source code generation through build system rather than follow code revie
 
 May 12, 2016 &mdash; Krzysztof Ostrowski
 
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
