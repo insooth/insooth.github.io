@@ -121,4 +121,4 @@ Since `swap` on the buffers will lead to `move` (in fact a [reassignment of poin
 
 January 20, 2018 &mdash; Krzysztof Ostrowski
 
-
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
