@@ -200,3 +200,4 @@ Type produced by `std::reference_wrapper` is guaranteed to be [`TriviallyCopyabl
 
 December 9, 2016 &mdash; Krzysztof Ostrowski
 
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
