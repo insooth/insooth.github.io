@@ -42,7 +42,51 @@ Produced in that way output for `g` after `f` will be of `std::vector<std::vecto
 
 ## Function objects' composition
 
-TODO
+In the following example we will compose two function objects `f` and `g` of types `F` and `G` respectively &mdash; `g` after `f`. Object of type `F` if applied to a value of type `T` may fail to produce an output value of the desired type thus its result type is wrapped into [`std::optional`](http://en.cppreference.com/w/cpp/utility/optional).
+
+```c++
+struct F
+{
+    std::optional<T> operator() (T t);
+};
+
+struct G
+{
+    T operator() (T t);
+};
+```
+
+Unfortunately, direct composition `g` after `f` is not possible:
+
+```
+error: no match for call to '(G) (std::optional<int>)'
+     g(f({}));
+            ^
+note:   no known conversion for argument 1 from 'std::optional<int>' to 'T'
+```
+
+Dedicated layer of abstraction that will do the required argument conversion should solve that issue. We can easily write code like this:
+
+```c++
+F f;
+G g;
+
+auto r1 = f({});
+
+if (r1)
+{
+    auto r2 = g(r1.value());
+    // do something with r2
+}
+```
+
+which does not solve the problem, though. Every subsequent composed function introduces an extra nested `if` block with temporary variables. That's the best recipe for maintenance nightmare. Let's define the presented composition problem in terms of iteration, application and binding.
+
+### Iteration
+
+### Application
+
+### Binding
 
 #### About this document
 
