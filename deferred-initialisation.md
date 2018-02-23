@@ -300,4 +300,4 @@ Proposed solution can be lifted into a reusable abstraction. An example of a wor
 
 September 8, 2017 &mdash; Krzysztof Ostrowski
 
-
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
