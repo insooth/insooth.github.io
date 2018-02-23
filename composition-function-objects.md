@@ -31,7 +31,7 @@ std::vector<U> h(...) { return g( f(...) ); }  // g after f -- pseudo-code
 //                              |________| translation happens here!
 ```
 
-Congratulations, now you know what the [Monad](http://hackage.haskell.org/package/base-4.10.1.0/docs/Control-Monad.html]) is for. Translation layer is created with `>>=` (monadic bind) that combines two functions. Wrapping does `return` (and `lift` which "changes" function signatures to operate in a monadic context). Unwrapping is done through `<-` (which sequentially pulls values form a monadic container).
+Congratulations, now you know what the [Monad](http://hackage.haskell.org/package/base-4.10.1.0/docs/Control-Monad.html) is for. Translation layer is created with `>>=` (monadic bind) that combines two functions. Wrapping does `return` (and `lift` which "changes" function signatures to operate in a monadic context). Unwrapping is done through `<-` (which sequentially pulls values form a monadic container).
 
 Due to fact we have to strictly follow maths, following steps are executed within the `>>=` abstraction:
 * pull (`<-`) from the result of `f` application, and _for each one pulled_:
