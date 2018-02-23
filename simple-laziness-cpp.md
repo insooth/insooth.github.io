@@ -96,3 +96,4 @@ Please note that we do not use negated boolean logic, that is we always check fo
 
 June 13, 2016 &mdash; Krzysztof Ostrowski
 
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
