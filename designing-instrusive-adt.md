@@ -95,3 +95,5 @@ Some other solution for single resource and multiple users include feeding each 
 #### About this document
 
 June 19,29,30;August 10 2016 &mdash; Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
