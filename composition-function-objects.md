@@ -84,6 +84,53 @@ which does not solve the problem, though. Every subsequent composed function int
 
 ### Iteration
 
+Composition of functions is performed in the known direction. Initial input data is passed to the first function in the composition chain, function application is performed, the resulting value becomes "initial" input data for the second function in the chain, and so on. In general, we are iterating over a _sequence_ of items representing functions, and during the iteration we are performing function application, and binding of the results to the subsequent function. To be able to iterate over, we have to choose an appropriate abstraction that enables us to do so.
+
+C++ language defines _iterable_ abstraction by means of [`SequenceContainer`](http://en.cppreference.com/w/cpp/concept/SequenceContainer) concept that we would have had a chance to reuse if it had been defined for heterogeneous containers. That is, neither `std::vector` nor `std::array` models of that concept accept items of multiple different types at once. Actually, `std::tuple` is the only true heterogeneous container in C++17. We will wrap `std::tuple` into an abstraction that models `FunctionObject`:
+
+```c++
+template<class... Ts>
+struct Chain
+{
+  using sequence_type = std::tuple<Ts...>;
+
+
+  template<class... As>
+  constexpr decltype(auto) operator()(As&&... args)
+  {
+    static_assert(std::tuple_size<sequence_type>::value > 0, "Empty chain");
+
+    // apply first function in sequence to args, pass the result
+    // to the next one; repeat until last function which result
+    // is returned to the user
+  
+    return T{};
+    //     ^~~ required to make type inference possible
+  }
+
+
+  constexpr Chain() = default;
+  constexpr Chain(Ts&&... ts) : sequence{std::forward<Ts>(ts)...} {}
+
+  sequence_type sequence;
+};
+```
+
+&mdash; and use it as follows:
+
+```c++
+Chain<F, G> chain;
+// or Chain<F, G> chain = {F{}, G{}};
+
+const auto result = chain(T{});
+```
+
+Side note. Someone would say: let's force users to derive from a base class with a `virtual` member function that will forward to the respective function call operator. That's a sign of a bad design! Here is why:
+* we would have to define a multitude of such `virtual` member functions &mdash; for every used function signature,
+* we would introduce a _strict_ relationship between the completely unrelated types (here: function objects),
+* we would add a layer of indirection that affects runtime (dynamic dispatch),
+* we would have to maintain all that tons of code.
+
 ### Application
 
 ### Binding
