@@ -98,7 +98,7 @@ struct Chain
   template<class... As>
   constexpr decltype(auto) operator()(As&&... args)
   {
-    static_assert(std::tuple_size<sequence_type>::value > 0, "Empty chain");
+    static_assert(std::tuple_size_v<sequence_type> > 0, "Empty chain");
 
     // apply first function in sequence to args, pass the result
     // to the next one; repeat until last function which result
