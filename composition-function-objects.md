@@ -133,6 +133,100 @@ Side note. Someone would say: let's force users to derive from a base class with
 
 ### Application
 
+The body of function call operator of `Chain` shall do:
+* `std::get<0>(sequence)` function object application to the passed `args`,
+* translation of the result value and application of `std::get<1>(sequence)` to it.
+
+The above two steps shall be performed for every subsequent item in the `sequence`. Iteration over the sequence requires an implicit state to be transferred between each iteration step. That state represents the last known result of an function application. The state is a subject of the _translation_ process that will be introduced soon. 
+
+Let's consider an application chain for a direct composition. Following example code additionally enables application of an object of `std::tuple` type to a function that expects "exploded" tuple input:
+
+```c++
+template<class... Ts>
+struct Chain
+{
+  using sequence_type = std::tuple<Ts...>;
+  
+  template<class... As>
+  constexpr decltype(auto) operator()(As&&... args)
+  {
+    static_assert(std::tuple_size_v<sequence_type> > 0, "Empty chain");
+
+    return run<0>(std::forward<As>(args)...);
+  }
+
+// ...
+
+  template<std::size_t I, class... As>
+  constexpr auto run(As&&... args)
+  {
+    // all items but last 
+    if constexpr (I < std::tuple_size_v<sequence_type>)
+    {
+      // explode a tuple
+      if constexpr (std::conjunction_v<is_tuple<As...>
+                                     , can_apply<decltype(std::get<I>(sequence)), As...>>)
+      {
+        return run<I + 1>(std::apply(std::get<I>(sequence)
+                        , std::forward<As>(args)...));
+      }
+      // direct application
+      else
+      {
+        return run<I + 1>(std::invoke(std::get<I>(sequence)
+                                    , std::forward<As>(args)...));
+      }
+    }
+    // last one item in sequence
+    else if constexpr (I == std::tuple_size_v<sequence_type>)
+    {
+      // just return first one: the implicit state
+      return std::get<0>(std::forward_as_tuple(std::forward<As>(args)...));
+    }
+    else
+    {
+      throw std::invalid_argument{"BUG!"};
+    }
+
+// ...
+  }
+```
+
+&mdash; where `can_apply` checks whether `std::apply` can be performed, and `is_tuple` checks whether given type is an instance of `std::tuple` template:
+
+```c++
+template<class U>
+struct is_tuple : std::false_type {};
+
+template<class... Us>
+struct is_tuple<std::tuple<Us...>> : std::true_type  {};
+
+
+template<class F, class T, class = std::void_t<>>
+struct can_apply : std::false_type {};
+
+template<class F, class T>
+struct can_apply<F, T, std::void_t<
+        decltype(std::apply(std::declval<F>(), std::declval<T>()))
+    >> : std::true_type {};
+```
+
+We can build the following composition chain:
+
+```c++
+struct A { std::tuple<T, T> operator() (T t)        { return {t+1,     t+2}; } };
+struct B { std::tuple<T, T> operator() (T t1, T t2) { return {t1 + t2, t2 }; } };
+struct C { T                operator() (T t1, T t2) { return {t1 + t2     }; } };
+
+// example: c . b. a 1 is (1, 2) -> (2, 3) -> (5, 3) -> 8
+
+Chain<A, B, C> chain;
+chain(T{1});
+```
+
+Note that `std::apply` used to "explode" a tuple is not a _translation_ of the implicit state in a monadic sense ([bind for `Tuple`](https://hackage.haskell.org/package/base-4.10.1.0/docs/src/GHC.Base.html#local-6989586621679017734)). It logically performs [`uncurry`](http://hackage.haskell.org/package/base-4.10.1.0/docs/Prelude.html#v:uncurry) on the subsequent function, followed by application of a tuple through [`$`](http://hackage.haskell.org/package/base-4.10.1.0/docs/Prelude.html#v:-36-).
+
+
 ### Binding
 
 #### About this document
