@@ -218,7 +218,7 @@ struct A { std::tuple<T, T> operator() (T t)        { return {t+1,     t+2}; } }
 struct B { std::tuple<T, T> operator() (T t1, T t2) { return {t1 + t2, t2 }; } };
 struct C { T                operator() (T t1, T t2) { return {t1 + t2     }; } };
 
-// example: c . b. a 1 is (1, 2) -> (2, 3) -> (5, 3) -> 8
+// example:  c . b. a 1  is (2, 3) -> (5, 3) -> 8
 
 Chain<A, B, C> chain;
 chain(T{1});
