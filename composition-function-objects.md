@@ -233,14 +233,14 @@ Example translation defined for `std::optional<T>` value and a function that tak
 ```c++
 template<class T, class F>
 //  requires Callable<F, T>
-constexpr auto translate(std::optional<T>&& v, F&& f)
+constexpr auto mbind(std::optional<T>&& v, F&& f)
 {
   return v ? std::make_optional(f(v.value())) : std::nullopt;
-//           ^~~ wrap           ^~~ unwrap
+//                ^~~ wrap        ^~~ unwrap
 }
 ```
 
-&mdash; function object `f` is applied to `v` only if it holds a value. Since the result type of `translate` must be consistent, the application result value is wrapped back into the original container. We can eliminate nested `if` checks easily with `translate`:
+&mdash; function object `f` is applied to `v` only if it holds a value. Since the result type of `mbind` must be consistent, the application result value is wrapped back into the original container. We can eliminate nested `if` checks easily with `mbind`:
 
 ```c++
 struct F { std::optional<T> operator() (T t); };
@@ -250,15 +250,16 @@ F f;
 G g;
 
 auto r1 = f({});
-auto r2 = translate(std::move(r1), g);
+auto r2 = mbind(std::move(r1), g);
 //   ^~~ is of type optional<T> (G is "lifted" into optional)
-auto r3 = translate(std::move(r2), G{});
-//                            ^~~ unwrapped implicitly
+auto r3 = mbind(std::move(r2), G{});
+//                        ^~~ unwrapped implicitly
 ```
 
-`translate` defined for `std::optional` works here as [`>>=` defined for `Maybe`](http://hackage.haskell.org/package/base-4.10.1.0/docs/src/GHC.Base.html#local-6989586621679017702) monad. There may be multiple `translate` functions (`>>=`) defined for each container (`Monad` instance). Note that only a single layer of abstraction is unwrapped in order to fetch the stored value.
+`mbind` defined for `std::optional` works here as [`>>=` defined for `Maybe`](http://hackage.haskell.org/package/base-4.10.1.0/docs/src/GHC.Base.html#local-6989586621679017702) monad. There may be multiple `mbind` functions (`>>=`) defined for each container (`Monad` instance). Note that only a single layer of abstraction is unwrapped in order to fetch the stored value.
 
-Let's incorporate `translation` into the `Chain`.
+Let's incorporate `mbind` into the `Chain`.
+
 
 #### About this document
 
