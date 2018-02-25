@@ -258,7 +258,86 @@ auto r3 = mbind(std::move(r2), G{});
 
 `mbind` defined for `std::optional` works here as [`>>=` defined for `Maybe`](http://hackage.haskell.org/package/base-4.10.1.0/docs/src/GHC.Base.html#local-6989586621679017702) monad. There may be multiple `mbind` functions (`>>=`) defined for each container (`Monad` instance). Note that only a single layer of abstraction is unwrapped in order to fetch the stored value.
 
-Let's incorporate `mbind` into the `Chain`.
+
+Above defined `mbind` works for unary functions only. To enable it for functions of arbitrary arity we have to take a closer look at the algorithm itself.
+
+```c++
+template<class T>
+constexpr auto
+//        ^~~ deduced result type
+mbind(std::optional<T>&& v
+//                       ^~~ argument
+    , F&& f)
+//        ^~~ function to which argument is going to be applied
+{
+//       .~~ do we have a value under argument?
+  return v
+//       .~~ process argument's value if exists
+         ? std::make_optional(
+//              ^~~ wrap
+                                f(
+//                              ^~~ apply
+                                    v.value()
+//                                    ^~~ unwrap
+                                 )
+                             )
+         : std::nullopt;
+//         ^~~ no value under argument, returns value of (deduced) optional<T> type
+}
+```
+
+We apply `f` only if none of the arguments to be passed to it is `nullopt`, otherwise we return `nullopt`. Example implementation where the "container" is denoted with `R`:
+
+```c++
+template<class R, class F, class... As>
+constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... args)
+{
+  constexpr auto all_set = [](auto&& v)
+  {
+    using arg_type = std::decay_t<decltype(v)>;
+
+    if constexpr (is_optional<arg_type>::value)
+    {
+      if constexpr (std::is_same_v<arg_type, std::nullopt_t>) return false;
+      else                                                    return v.has_value();
+    }
+    else
+    {
+      return true;
+    }
+  };
+
+  constexpr auto wrap = [](auto&& v) { return R{v}; };
+
+  if constexpr ((all_set(args) && ...))  // extra parens required
+  {
+    constexpr auto unwrap = [](auto&& v)
+    { 
+      using arg_type = std::decay_t<decltype(v)>;
+
+      if constexpr (is_optional<arg_type>::value) return v.value();
+      else                                        return v;
+    };
+
+    return wrap(f(unwrap(args)...));
+  }
+  else
+  {
+    return wrap(std::nullopt);
+  }
+}
+```
+
+&mdash; and usage:
+
+```c++
+using T = int;  // for exposition only
+using R = std::optional<T>;
+
+mbind_all<R>([](T x, T y, T z){ return x + y + z; }, std::nullopt, 2, 3);  // nullopt
+mbind_all<R>([](T x, T y, T z){ return x + y + z; }, 1, 2, 3);             // 6
+```
+
 
 
 #### About this document
