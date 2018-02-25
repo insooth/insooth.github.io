@@ -303,7 +303,7 @@ constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... ar
 
   constexpr auto wrap = [](auto&& v) { return R{v}; };
 
-  if ((is_set(args) && ...))  // extra parens required
+  if/* constexpr*/ ((is_set(args) && ...))  // extra parens required
   {
     constexpr auto unwrap = [](auto&& v)
     { 
@@ -337,9 +337,18 @@ using R = std::optional<T>;
 mbind_all<R>([](T x, T y, T z){ return x + y + z; }, R{}, 2, 3);           // nullopt
 mbind_all<R>([](T x, T y, T z){ return x + y + z; }, 1, 2, 3);             // 6
 mbind_all<R>([](T x, T y, T z){ return x + y + z; }, 1, R{2}, 3);          // 6
-mbind_all<R>([](T x, T y, T z){ return x + y + z; }, 1, std::nullopt, 3);  // does not compile
+mbind_all<R>([](T x, T y, T z){ return x + y + z; }, 1, std::nullopt, 3);  // does not compile (see note below)
 ```
 
+It is worth to note that `is_set` can be evaluated during compile-time, but its result not always can be (even so [`std::optional::has_value`](http://en.cppreference.com/w/cpp/utility/optional/operator_bool) is `constexpr`). That's the reason for non-constexpr `if-else` block that is controlled by the fold expression. This limitation has further implications. Both two branches of the mentioned conditional block are enabled, thus unwrapping code in `wrap(f(unwrap(args)...))` is going to be evaluated for `nullopt` values too. That's not allowed and leads to:
+
+```
+error: invalid use of void expression
+         return wrap(f(unwrap(args)...));
+                     ~^~~~~~~~~~~~~~~~~
+```
+
+### Composition through binding 
 
 
 #### About this document
