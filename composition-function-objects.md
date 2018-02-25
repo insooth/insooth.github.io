@@ -303,7 +303,7 @@ constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... ar
 
   constexpr auto wrap = [](auto&& v) { return R{v}; };
 
-  if ((all_set(args) && ...))  // extra parens required
+  if ((is_set(args) && ...))  // extra parens required
   {
     constexpr auto unwrap = [](auto&& v)
     { 
