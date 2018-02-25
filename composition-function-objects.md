@@ -321,6 +321,11 @@ constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... ar
     return wrap(std::nullopt);
   }
 }
+
+// where
+
+template<class U> struct is_optional                   : std::false_type {};
+template<class U> struct is_optional<std::optional<U>> : std::true_type  {};
 ```
 
 &mdash; and usage:
