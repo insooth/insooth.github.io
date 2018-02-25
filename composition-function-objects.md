@@ -348,7 +348,7 @@ error: invalid use of void expression
                      ~^~~~~~~~~~~~~~~~~
 ```
 
-### Composition through binding 
+## Composition through binding 
 
 
 #### About this document
