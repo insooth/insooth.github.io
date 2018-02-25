@@ -292,19 +292,13 @@ We apply `f` only if none of the arguments to be passed to it is `nullopt`, othe
 template<class R, class F, class... As>
 constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... args)
 {
-  constexpr auto all_set = [](auto&& v)
+  constexpr auto is_set = [](auto&& v)
   {
     using arg_type = std::decay_t<decltype(v)>;
-
-    if constexpr (is_optional<arg_type>::value)
-    {
-      if constexpr (std::is_same_v<arg_type, std::nullopt_t>) return false;
-      else                                                    return v.has_value();
-    }
-    else
-    {
-      return true;
-    }
+    
+    if constexpr (std::is_same_v<arg_type, std::nullopt_t>) return false;
+    else if constexpr (is_optional<arg_type>::value)        return v.has_value();
+    else                                                    return true;
   };
 
   constexpr auto wrap = [](auto&& v) { return R{v}; };
@@ -315,8 +309,9 @@ constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... ar
     { 
       using arg_type = std::decay_t<decltype(v)>;
 
-      if constexpr (is_optional<arg_type>::value) return v.value();
-      else                                        return v;
+      if constexpr (std::is_same_v<arg_type, std::nullopt_t>) throw std::invalid_argument{"BUG!"};
+      else if constexpr (is_optional<arg_type>::value)        return v.value();
+      else                                                    return v;
     };
 
     return wrap(f(unwrap(args)...));
@@ -334,8 +329,10 @@ constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... ar
 using T = int;  // for exposition only
 using R = std::optional<T>;
 
-mbind_all<R>([](T x, T y, T z){ return x + y + z; }, std::nullopt, 2, 3);  // nullopt
+mbind_all<R>([](T x, T y, T z){ return x + y + z; }, R{}, 2, 3);           // nullopt
 mbind_all<R>([](T x, T y, T z){ return x + y + z; }, 1, 2, 3);             // 6
+mbind_all<R>([](T x, T y, T z){ return x + y + z; }, 1, R{2}, 3);          // 6
+mbind_all<R>([](T x, T y, T z){ return x + y + z; }, 1, std::nullopt, 3);  // does not compile
 ```
 
 
