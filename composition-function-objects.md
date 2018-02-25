@@ -286,7 +286,7 @@ mbind(std::optional<T>&& v
 }
 ```
 
-We apply `f` only if none of the arguments to be passed to it is `nullopt`, otherwise we return `nullopt`. Example implementation where the "container" is denoted with `R`:
+We apply `f` only if none of the arguments to be passed to it is `nullopt`, otherwise we return `nullopt`. Example implementation where the "container" is denoted by `R` parameter:
 
 ```c++
 template<class R, class F, class... As>
@@ -303,7 +303,7 @@ constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... ar
 
   constexpr auto wrap = [](auto&& v) { return R{v}; };
 
-  if/* constexpr*/ ((is_set(args) && ...))  // extra parens required
+  if/* constexpr*/ ((is_set(std::forward<As>(args)) && ...))  // extra parens required
   {
     constexpr auto unwrap = [](auto&& v)
     { 
@@ -314,7 +314,7 @@ constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... ar
       else                                                    return v;
     };
 
-    return wrap(f(unwrap(args)...));
+    return wrap(f(unwrap(std::forward<As>(args))...));
   }
   else
   {
