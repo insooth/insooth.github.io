@@ -301,7 +301,10 @@ constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... ar
     else                                                    return true;
   };
 
-  constexpr auto wrap = [](auto&& v) { return R{std::forward<std::remove_reference_t<decltype(v)>>(v)}; };
+  constexpr auto wrap = [](auto&& v)
+  {
+    return R{std::forward<std::remove_reference_t<decltype(v)>>(v)};
+  };
 
   if/* constexpr*/ ((is_set(std::forward<As>(args)) && ...))  // extra parens required
   {
