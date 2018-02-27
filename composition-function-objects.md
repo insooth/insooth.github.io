@@ -357,7 +357,7 @@ Unfortunately, the following won't compile because we have explicitly fixed the 
 
 ```c++
 using R = std::optional<T>;  // T is int -- for exposition only
-
+//    ^~~~.
 mbind_all<R>([](T x, T y, T z){ return std::make_tuple("sum", x + y + z); }, R{1}, T{2}, T{3});
 //                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 /*
