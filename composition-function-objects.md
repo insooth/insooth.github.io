@@ -351,7 +351,22 @@ error: invalid use of void expression
                      ~^~~~~~~~~~~~~~~~~
 ```
 
-## Composition through binding 
+## Composition through binding
+
+Unfortunately, the following won't compile because we have explicitly fixed the `R` type, that does not match the result type from the of the lambda expression:
+
+```c++
+using R = std::optional<T>;  // T is int -- for exposition only
+
+mbind_all<R>([](T x, T y, T z){ return std::make_tuple("sum", x + y + z); }, R{1}, T{2}, T{3});
+//                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/*
+error: no matching function for call to 'std::optional<int>::optional(std::tuple<const char*, int>)'
+     constexpr auto wrap = [](auto&& v) { return R(...
+*/
+```
+
+In order to overcome that we would have to specify `R` as a parametrised type constructor, i.e. a template for which parameter we have to figure out. In our case it would be `std::optional<?>` where `?` is going to be computed based on the type of input arguments.
 
 
 #### About this document
