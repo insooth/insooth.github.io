@@ -343,7 +343,7 @@ mbind_all<R>([](T x, T y, T z){ return x + y + z; }, 1, R{2}, 3);          // 6
 mbind_all<R>([](T x, T y, T z){ return x + y + z; }, 1, std::nullopt, 3);  // does not compile (see note)
 ```
 
-It is worth to note that `is_set` can be evaluated during compile-time, but its result not always can be (even so [`std::optional::has_value`](http://en.cppreference.com/w/cpp/utility/optional/operator_bool) is `constexpr`). That's the reason for non-constexpr `if-else` block that is controlled by the fold expression. This limitation has further implications. Both two branches of the mentioned conditional block are enabled, thus unwrapping code in `wrap(f(unwrap(args)...))` is going to be evaluated for `nullopt` values too. That's not allowed and leads to:
+(\*) It is worth to note that `is_set` can be evaluated during compile-time, but its result not always can be (even so [`std::optional::has_value`](http://en.cppreference.com/w/cpp/utility/optional/operator_bool) is `constexpr`). That's the reason for non-constexpr `if-else` block that is controlled by the fold expression. This limitation has further implications. Both two branches of the mentioned conditional block are enabled, thus unwrapping code in `wrap(f(unwrap(args)...))` is going to be evaluated for `nullopt` values too. That's not allowed and leads to:
 
 ```
 error: invalid use of void expression
@@ -366,7 +366,47 @@ error: no matching function for call to 'std::optional<int>::optional(std::tuple
 */
 ```
 
-In order to overcome that we would have to specify `R` as a parametrised type constructor, i.e. a template for which parameter we have to figure out. In our case it would be `std::optional<?>` where `?` is going to be computed based on the type of input arguments.
+In order to overcome that we would have to specify `R` as a parametrised type constructor, i.e. a template for which parameter we have to figure out. In our case it would be `std::optional<?>` where `?` is going to be computed based on the type of input arguments. Simply "unfixing" the `R` type triggers and error that is a consequence of non-constexpr `if` block controlled by `is_set` (see (\*)  for details):
+
+```c++
+template<template<class...> class R, class F, class... As>
+constexpr auto mbind_all(F&& f, As&&... args)
+{    
+// ...
+  constexpr auto wrap = [](auto&& v)
+  {
+      using arg_type = std::remove_reference_t<decltype(v)>;
+        
+      return R<arg_type>(std::forward<arg_type>(v));
+  };
+// ...
+ if/* constexpr*/ ((is_set(std::forward<As>(args)) && ...))
+  {
+// ...
+    return wrap(f(unwrap(std::forward<As>(args))...));
+//         ^^^^
+  }
+  else
+  {
+    return wrap(std::nullopt);
+//         ^^^^
+  }
+```
+
+&mdash; gives:
+
+```c++
+mbind_all
+  <
+    std::optional  // a template that constructs fixed types like optional<int>
+  >([](T x, T y, T z){ return std::make_tuple("sum", x + y + z); }, R{1}, T{2}, T{3});
+/*
+error: inconsistent deduction for auto return type:
+    'std::optional<std::tuple<const char*, int> > and then 'std::optional<const std::nullopt_t>'
+*/
+```
+
+We have to disable one of the branches of the mentioned `if` block to make the deduction succeed.
 
 
 #### About this document
