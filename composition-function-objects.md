@@ -520,9 +520,9 @@ std::cout << s << ' ' << i << '\n';  // sum 6
 mbind_all<std::optional>  //                                       ,~~~ makes computation failed
   ([](T x, T y, T z){ return std::make_tuple("sum", x + y + z); }, R{}, T{2}, T{3})
     .value();  // terminate called after throwing an instance of 'std::bad_optional_access'
-
 ```
 
+Let's incorporate `mbdind_all` into the `Chain`.
 
 #### About this document
 
