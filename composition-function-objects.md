@@ -446,7 +446,66 @@ constexpr auto mbind_all(F&& f, As&&... args)
 }
 ```
 
-Note that `isset` and `unwrap` are `std::optional`-specific.
+Note that `isset` and `unwrap` are `std::optional`-specific. To make `mbind_all` working for an arbitrary `R` affected actions (`wrap`, `unwrap`, `is_set`) and value return upon computation failure are abstracted into `mbind_all_impl` tagged with `R`:
+
+```c++
+template<template<class...> class R, class F, class... As>
+constexpr auto mbind_all(F&& f, As&&... args)
+{
+  using impl = mbind_all_impl<R>;
+
+  using result_type = decltype(impl::wrap(f(impl::unwrap(std::forward<As>(args))...)));
+
+  return (impl::is_set(std::forward<As>(args)) && ...)
+              ? impl::wrap(f(impl::unwrap(std::forward<As>(args))...))
+              : result_type{impl::failure_value};
+}
+```
+&mdash; where:
+
+```c++
+template<template<class...> class R>
+struct mbind_all_impl_base
+{
+  template<class V>
+  static constexpr auto wrap(V&& v)
+  {
+    using arg_type = std::remove_reference_t<V>;
+    
+    return R<arg_type>{std::forward<arg_type>(v)};
+  }
+};
+
+template<template<class...> class R>
+struct mbind_all_impl;
+
+template<>
+struct mbind_all_impl<std::optional>
+  : mbind_all_impl_base<std::optional>
+{
+  template<class V>
+  static constexpr auto is_set(V&& v)
+  {
+    using arg_type = std::remove_reference_t<V>;
+
+    if constexpr (std::is_same_v<arg_type, std::nullopt_t>) return false;
+    else if constexpr (is_optional<arg_type>::value)        return v.has_value();
+    else                                                    return true;
+  }
+  
+  template<class V>
+  static constexpr auto unwrap(V&& v)
+  {
+    using arg_type = std::remove_reference_t<V>;
+    
+    if constexpr (std::is_same_v<arg_type, std::nullopt_t>) throw std::invalid_argument{"BUG!"};
+    else if constexpr (is_optional<arg_type>::value)        return v.value();
+    else                                                    return v;
+  }
+  
+  static constexpr auto failure_value = std::nullopt;
+};
+```
 
 #### About this document
 
