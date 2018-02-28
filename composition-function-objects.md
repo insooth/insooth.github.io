@@ -406,8 +406,47 @@ error: inconsistent deduction for auto return type:
 */
 ```
 
-We have to disable one of the branches of the mentioned `if` block to make the deduction succeed.
+We have to either disable one of the branches of the mentioned `if` block to make the deduction succeed, or calculate the common type, then use its default constructor (that works for `std::optional` and leads to an object that does not contain a value). Following code snippet implements the mentioned technique:
 
+```c++
+template<template<class...> class R, class F, class... As>
+constexpr auto mbind_all(F&& f, As&&... args)
+{
+  constexpr auto is_set = [](auto&& v)
+  {
+    using arg_type = std::decay_t<decltype(v)>;
+
+    if constexpr (std::is_same_v<arg_type, std::nullopt_t>) return false;
+    else if constexpr (is_optional<arg_type>::value)        return v.has_value();
+    else                                                    return true;
+  };
+
+  constexpr auto unwrap = [](auto&& v)
+  { 
+    using arg_type = std::decay_t<decltype(v)>;
+    
+    if constexpr (std::is_same_v<arg_type, std::nullopt_t>) throw std::invalid_argument{"BUG!"};
+    else if constexpr (is_optional<arg_type>::value)        return v.value();
+    else                                                    return v;
+  };
+
+  constexpr auto wrap = [](auto&& v)
+  {
+    using arg_type = std::remove_reference_t<decltype(v)>;
+    
+    return R<arg_type>{std::forward<arg_type>(v)};
+  };
+
+  using result_type = decltype(wrap(f(unwrap(std::forward<As>(args))...)));
+
+  return (is_set(std::forward<As>(args)) && ...)
+          ? wrap(f(unwrap(std::forward<As>(args))...))
+          : result_type{};
+//          ^^^^^^^^^^^^^
+}
+```
+
+Note that `isset` and `unwrap` are `std::optional`-specific.
 
 #### About this document
 
