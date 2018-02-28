@@ -294,7 +294,7 @@ constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... ar
 {
   constexpr auto is_set = [](auto&& v)
   {
-    using arg_type = std::decay_t<decltype(v)>;
+    using arg_type = std::remove_reference_t<decltype(v)>;
     
     if constexpr (std::is_same_v<arg_type, std::nullopt_t>) return false;
     else if constexpr (is_optional<arg_type>::value)        return v.has_value();
@@ -310,7 +310,7 @@ constexpr std::enable_if_t<is_optional<R>::value, R> mbind_all(F&& f, As&&... ar
   {
     constexpr auto unwrap = [](auto&& v)
     { 
-      using arg_type = std::decay_t<decltype(v)>;
+      using arg_type = std::remove_reference_t<decltype(v)>;
 
       if constexpr (std::is_same_v<arg_type, std::nullopt_t>) throw std::invalid_argument{"BUG!"};
       else if constexpr (is_optional<arg_type>::value)        return v.value();
@@ -414,7 +414,7 @@ constexpr auto mbind_all(F&& f, As&&... args)
 {
   constexpr auto is_set = [](auto&& v)
   {
-    using arg_type = std::decay_t<decltype(v)>;
+    using arg_type = std::remove_reference_t<decltype(v)>;
 
     if constexpr (std::is_same_v<arg_type, std::nullopt_t>) return false;
     else if constexpr (is_optional<arg_type>::value)        return v.has_value();
@@ -423,7 +423,7 @@ constexpr auto mbind_all(F&& f, As&&... args)
 
   constexpr auto unwrap = [](auto&& v)
   { 
-    using arg_type = std::decay_t<decltype(v)>;
+    using arg_type = std::remove_reference_t<decltype(v)>;
     
     if constexpr (std::is_same_v<arg_type, std::nullopt_t>) throw std::invalid_argument{"BUG!"};
     else if constexpr (is_optional<arg_type>::value)        return v.value();
@@ -446,7 +446,7 @@ constexpr auto mbind_all(F&& f, As&&... args)
 }
 ```
 
-Note that `isset` and `unwrap` are `std::optional`-specific. To make `mbind_all` working for an arbitrary `R` affected actions (`wrap`, `unwrap`, `is_set`) and value return upon computation failure are abstracted into `mbind_all_impl` tagged with `R`:
+Note that `isset` and `unwrap` are `std::optional`-specific. To make `mbind_all` working for an arbitrary `R` the affected actions (`wrap`, `unwrap`, `is_set`) and value returned upon computation failure are abstracted into `mbind_all_impl` tagged with `R`:
 
 ```c++
 template<template<class...> class R, class F, class... As>
@@ -507,8 +507,25 @@ struct mbind_all_impl<std::optional>
 };
 ```
 
+Example usage:
+
+```c++
+auto [s, i] =
+  mbind_all<std::optional>
+    ([](T x, T y, T z){ return std::make_tuple("sum", x + y + z); }, R{1}, T{2}, T{3})
+      .value();
+
+std::cout << s << ' ' << i << '\n';  // sum 6
+
+mbind_all<std::optional>  //                                       ,~~~ makes computation failed
+  ([](T x, T y, T z){ return std::make_tuple("sum", x + y + z); }, R{}, T{2}, T{3})
+    .value();  // terminate called after throwing an instance of 'std::bad_optional_access'
+
+```
+
+
 #### About this document
 
-February 23, 2018 &mdash; Krzysztof Ostrowski
+February 23--28, 2018 &mdash; Krzysztof Ostrowski
 
 [LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
