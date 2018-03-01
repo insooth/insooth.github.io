@@ -1,6 +1,8 @@
 
 # Composition of function objects
 
+_(or Exercise in Monads)_
+
 Language reference for the C++ concept [`FunctionObject`](http://en.cppreference.com/w/cpp/concept/FunctionObject) defines it as an object that implements function call operator &mdash; `operator()`. That's pretty simple, yet impressively powerful concept at the same time.
 
 Function call operator can take arbitrary number of arguments including ellipsis (`...`), can return value of any type, and can appear in any context. If defined for a type that models `FunctionObject` concept  it can be used as an [efficient](http://www.open-std.org/jtc1/sc22/wg21/docs/18015.html) replacement for pointers to functions &mdash; as of C++11 _generated_ by widely known lambda expression syntax sugar.
