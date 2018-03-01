@@ -538,7 +538,7 @@ auto r3 = mbind_all<std::optional>(G{}, std::move(r2));
 //                                      ^~~ unwrapped implicitly
 ```
 
-Interestingly, we cannot mix the containers of different types in a single `mbind_all` composition chain easily. We can "stack" them (like `std::vector<std::optional<T>>`), and then move between the created layers of abstraction. That requires additional tooling known as [Monad Transformers](https://en.wikibooks.org/wiki/Haskell/Monad_transformers) and is not covered in this article.
+Interestingly, we cannot mix the containers of different types in a single `mbind_all` composition chain easily. We can "stack" them (like `std::vector<std::optional<T>>`), and then move between the created layers of abstraction. That requires additional tooling known as [Monad Transformers](https://en.wikibooks.org/wiki/Haskell/Monad_transformers), and is not covered in this article.
 
 ## Chaining function objects
 
