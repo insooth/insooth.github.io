@@ -16,8 +16,8 @@ Designing for composition is the true key to success. To be able to compose anyt
 _Translation_ touches types, never the actual values. That means, there may happen that `std::vector` will be iterated, `std::optional` content will be checked, or `std::tuple` will be "exploded" via `std::apply`. In the other words: the _container_ for the actual values will be unwrapped, and wrapped again after function application completes. Note that, function is a container too &mdash; applied partially stores its arguments and, if applied fully, a result value. Consider application of `g` after `f` where:
 
 ```c++
-std::vector<T> f(...) { return {{}, {}, {}}; }  // f produces three values of type T
-U              g(T t) { return U{t};         }  // g makes U value out of T value
+std::vector<T> f(...) { return { {}, {}, {} }; }  // f produces three values of type T
+U              g(T t) { return U{t};           }  // g makes U value out of T value
 ```
 
 No direct composition exists for those two functions: result type of `f` does not match the argument type of `g`. It does not matter here whether they model `FunctionObject` concept or not. Indirect composition (i.e. translation) is possible, and depends on the logic inside the translator. We have to invent the appropriate logic ourselves (here, in fact, it is already given, see note at the end of this chapter).
