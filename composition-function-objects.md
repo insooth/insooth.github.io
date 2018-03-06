@@ -544,7 +544,55 @@ Interestingly, we cannot mix the containers of different types in a single `mbin
 
 ## Chaining function objects
 
-Let's incorporate `mbdind_all` into the `Chain`.
+Abstraction `mdind_all` can be incorporated into the `Chain` with a some effort. First step is to pass the `R` class template into the original type:
+
+```c++
+template<template<class...> class R, class... Ts>
+//       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+struct Chain
+{
+...
+```
+
+The second step is to tweak the `run` member function's cases for non-terminal iteration steps:
+
+```c++
+if constexpr (I < std::tuple_size_v<sequence_type>)
+{
+  if constexpr (std::conjunction_v<
+                    std::is_same<decltype(impl::failure_value), std::remove_reference_t<As>>...
+                  >)
+  {
+    return impl::failure_value;
+  }
+  else if constexpr (std::conjunction_v<
+                          is_tuple<As...>
+                        , can_apply<decltype(std::make_tuple(std::get<I>(sequence))), As...>
+                        >)
+  {
+    auto r =
+      std::apply( do_mbind_all
+//                ^^^^^^^^^^^^
+                , std::tuple_cat(std::make_tuple(std::get<I>(sequence)), std::forward<As>(args)...) );
+
+    return impl::is_set(r)
+              ? impl::wrap(impl::unwrap(run<I + 1>(impl::unwrap(std::move(r)))))
+//                         ^^^^^^^^^^^^
+              : impl::failure_value;
+  }
+  else
+  {
+    auto r = mbind_all<R>(std::get<I>(sequence), std::forward<As>(args)...);
+
+    return impl::is_set(r)
+              ? impl::wrap(impl::unwrap(run<I + 1>(impl::unwrap(std::move(r)))))
+//                         ^^^^^^^^^^^^
+              : impl::failure_value;
+  }
+}
+```
+
+See live code on Coliru [here](http://coliru.stacked-crooked.com/a/1f91f9fe4e7b069f).
 
 #### About this document
 
