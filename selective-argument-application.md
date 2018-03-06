@@ -17,15 +17,15 @@ G g;
 //       ^~~ intercepts the result of f
 ```
 
-&mdash; where `l` can be either a generic lambda expression or a function object with the signature `auto (auto&&)`. Action `l` forwards  received input value (result of `f` application) transparently to `g`). Extra work performed by `l` includes "recording" of the value that is forwarded. Recording means here storing a value in the external container (like logger stream) for later processing.
+&mdash; where `l` can be either a generic lambda expression or a function object with the signature `auto (auto&&)`. Action `l` forwards  the received input value (result of the `f` application) transparently to `g`). Extra work performed by `l` includes "recording" of the value that is forwarded. Recording means here storing a value in the external container (like logger stream) for later processing.
 
-That was an easy task for us. Let's design an interceptor that records the _selected_ arguments passed to any action transparently, then applies that action to the arguments, and eventually passes the result value to the next action.
+Let's design an interceptor that records values of the _selected_ arguments passed to any action transparently, then applies that action to the arguments, and eventually passes the result value to the next action.
 
 ## Application
 
 Applicator does application, and C++17 offers two generic applicators:
-* `std::invoke(F, Args...)` for direct application of `f` to a number of arguments, and...
-* `std::apply(F, tuple<Args...>)` that unpacks arguments from the given `tuple` container (aka "explosion") and does the application using the former one applicator.
+* [`std::invoke(F, Args...)`](http://en.cppreference.com/w/cpp/utility/functional/invoke) for direct application of `f` to a number of arguments, and...
+* [`std::apply(F, tuple<Args...>)`](http://en.cppreference.com/w/cpp/utility/apply) that unpacks arguments from the given `tuple` container (aka "explosion") and does the application using the former one applicator.
 
 Here is the "interceptor" function object that works for any action of type `F`:
 
