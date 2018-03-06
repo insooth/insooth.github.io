@@ -594,7 +594,7 @@ if constexpr (I < std::tuple_size_v<sequence_type>)
 }
 ```
 
-&mdash; where `do_mbind_all` does the thing described i.a. in [P0834R0](wg21.link/P0834R0), it lifts overload set into an object. Simply passing `mbind_all<R>` into `std::apply` leads to unresolved overload error. Here is the implementation of the mentioned lift action:
+&mdash; where `do_mbind_all` does the thing described i.a. in [P0834R0](http://wg21.link/P0834R0), it lifts overload set into an object. Simply passing `mbind_all<R>` into `std::apply` leads to unresolved overload error. Here is the implementation of the mentioned lift action:
 
 ```c++
 static constexpr auto do_mbind_all =
