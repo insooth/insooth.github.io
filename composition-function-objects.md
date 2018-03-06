@@ -557,6 +557,8 @@ struct Chain
 The second step is to tweak the `run` member function's cases for non-terminal iteration steps:
 
 ```c++
+// using impl = mbind_all_impl<R>;
+
 if constexpr (I < std::tuple_size_v<sequence_type>)
 {
   if constexpr (std::conjunction_v<
@@ -591,6 +593,18 @@ if constexpr (I < std::tuple_size_v<sequence_type>)
   }
 }
 ```
+
+&mdash; where `do_mbind_all` does the thing described i.a. in [P0834R0](wg21.link/P0834R0), it lifts overload set into an object. Simply passing `mbind_all<R>` into `std::apply` leads to unresolved overload error. Here is the implementation of the mentioned lift action:
+
+```c++
+static constexpr auto do_mbind_all =
+  [](auto&&... as)
+  {
+    return mbind_all<R>(std::forward<std::remove_reference_t<decltype(as)>>(as)...);
+  };
+```
+
+Since `mbind_all` implicitly wraps the result value into `R` abstraction, we end up quickly with overly nested abstractions. That's fixed by additional unwrapping of the result value returned in the subsequent step.
 
 See live code on Coliru [here](http://coliru.stacked-crooked.com/a/1f91f9fe4e7b069f).
 
