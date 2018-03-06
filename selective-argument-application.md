@@ -17,7 +17,7 @@ G g;
 //       ^~~ intercepts the result of f
 ```
 
-&mdash; where `l` can be either a generic lambda expression or a function object of the signature `auto (auto&&)`. Action `l` forwards  received input value (result of `f` application) transparently to `g`). Extra work performed by `l` includes "recording" of the value that is forwarded. Recording means here storing a value in the external container (like logger stream) for later processing.
+&mdash; where `l` can be either a generic lambda expression or a function object with the signature `auto (auto&&)`. Action `l` forwards  received input value (result of `f` application) transparently to `g`). Extra work performed by `l` includes "recording" of the value that is forwarded. Recording means here storing a value in the external container (like logger stream) for later processing.
 
 That was an easy task for us. Let's design an interceptor that records the _selected_ arguments passed to any action transparently, then applies that action to the arguments, and eventually passes the result value to the next action.
 
