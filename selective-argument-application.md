@@ -1,7 +1,7 @@
 
 # Selective argument application
 
-Consider a chain of actions that are going to be composed with each other in order to produce a result of a certain type. Once fed with an input, such a chain, either gives some output or signals computation failure. Generally, there is no insight into the data exchanged between actions unless we inject a prepared action that intercepts the intermediate values (breaking the chain is not an option). Let's have a look at the chain that directly composes `g` after `f`, and for which we want to intercept the intermediate value using the prepared action `l`:
+Consider a chain of actions that are going to be composed with each other in order to produce a result of a certain type. Once fed with an input, such a chain, either gives some output or signals computation failure. Generally, there is no insight into the data exchanged between those actions unless we inject a prepared action that intercepts the intermediate values (breaking the chain is not an option). Let's have a look at the chain that directly composes `g` after `f`, and for which we want to intercept the intermediate value using the prepared action `l`:
 
 ```c++
 struct F { T operator() (U, V); };
