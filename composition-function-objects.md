@@ -82,13 +82,13 @@ if (r1)
 }
 ```
 
-which does not solve the problem, though. Every subsequent composed function introduces an extra nested `if` block with temporary variables. That's the best recipe for maintenance nightmare. Let's define the presented composition problem in terms of iteration, application and binding.
+which does not solve the problem, though. Every subsequent composed function introduces an extra nested `if` block with temporary variables. That's the best recipe for maintenance nightmare. Let's redefine the presented composition problem in terms of iteration, application and binding.
 
 ### Iteration
 
-Composition of functions is performed in the known direction. Initial input data is passed to the first function in the composition chain, function application is performed, the resulting value becomes "initial" input data for the second function in the chain, and so on. In general, we are iterating over a _sequence_ of items representing functions, and during the iteration we are performing function application, and binding of the results to the subsequent function. To be able to iterate over, we have to choose an appropriate abstraction that enables us to do so.
+Composition of functions is performed in the known direction. Initial input data is passed to the first function in the composition chain, function application is performed, the resulting value becomes "initial" input data for the second function in the chain, and so on. In general, we are iterating over a _sequence_ of items representing functions, and during that iteration we are performing function application, and then we are binding of the results to the subsequent function. To be able to iterate over, we have to choose an appropriate abstraction that enables us to do so.
 
-C++ language defines _iterable_ abstraction by means of [`SequenceContainer`](http://en.cppreference.com/w/cpp/concept/SequenceContainer) concept that we would have had a chance to reuse if it had been defined for heterogeneous containers. That is, neither `std::vector` nor `std::array` models of that concept accept items of multiple different types at once. Actually, `std::tuple` is the only true heterogeneous container in C++17. We will wrap `std::tuple` into an abstraction that models `FunctionObject`:
+C++ language defines _iterable_ abstraction by means of [`SequenceContainer`](http://en.cppreference.com/w/cpp/concept/SequenceContainer) concept that we would have had a chance to reuse if it had been defined for heterogeneous containers. That is, neither `std::vector` nor `std::array` models of that concept accepts items of multiple different types at the same time. Actually, `std::tuple` is the only true heterogeneous container in C++17. We will wrap `std::tuple` into an abstraction that models `FunctionObject`:
 
 ```c++
 template<class... Ts>
@@ -127,7 +127,7 @@ Chain<F, G> chain;
 const auto result = chain(T{});
 ```
 
-Side note. Someone would say: let's force users to derive from a base class with a `virtual` member function that will forward to the respective function call operator. That's a sign of a bad design! Here is why:
+Side note. Someone would say: let's force users to derive from a base class with a `virtual` member function that will forward the call to the respective function call operator. That's a sign of a bad design! Here is why:
 * we would have to define a multitude of such `virtual` member functions &mdash; for every used function signature,
 * we would introduce a _strict_ relationship between the completely unrelated types (here: function objects),
 * we would add a layer of indirection that affects runtime (dynamic dispatch),
@@ -135,13 +135,13 @@ Side note. Someone would say: let's force users to derive from a base class with
 
 ### Application
 
-The body of function call operator of `Chain` shall do:
-* `std::get<0>(sequence)` function object application to the passed `args`,
-* translation of the result value and application of `std::get<1>(sequence)` to it.
+The body of the function call operator of `Chain` shall do:
+* application of a `std::get< i >(sequence)` function object to the passed `args`,
+* translation of the result value, and application of `std::get< i + 1 >(sequence)` function object to it.
 
-The above two steps shall be performed for every subsequent item in the `sequence`. Iteration over the sequence requires an implicit state to be transferred between each iteration step. That state represents the last known result of an function application. The state is a subject of the _translation_ process that will be introduced soon. 
+The above two steps shall be performed for every subsequent item in the `sequence`. Iteration over that sequence requires an implicit state to be transferred between each iteration step. That state represents the last known result of a function application. The state is a subject of the _translation_ process that will be introduced soon. 
 
-Let's consider an application chain for a direct composition. Following example code additionally enables application of an object of `std::tuple` type to a function that expects "exploded" tuple input:
+Let's consider an application chain for a direct composition. Following example code additionally enables application of a function to an object of `std::tuple` type, where the function requires an "exploded" tuple input:
 
 ```c++
 template<class... Ts>
@@ -230,7 +230,7 @@ Note that `std::apply` used to "explode" a tuple is not a _translation_ of the i
 
 ### Binding
 
-Example translation defined for `std::optional<T>` value and a function that takes `T` argument and returns some value of type `U` is of shape:
+Here follows an example _translation_ defined for a `std::optional<T>` value and a function that takes argument of type `T`, and returns some value of type `U`:
 
 ```c++
 template<class T, class F>
@@ -242,7 +242,7 @@ constexpr auto mbind(std::optional<T>&& v, F&& f)
 }
 ```
 
-&mdash; function object `f` is applied to `v` only if it holds a value. Since the result type of `mbind` must be consistent, the application result value is wrapped back into the original container. We can eliminate nested `if` checks easily with `mbind`:
+&mdash; function object `f` is applied to `v` only if it holds a value. Since the result type of `mbind` must be consistent, the result value of the application is wrapped back into the original container. We can eliminate nested `if` checks easily with `mbind`:
 
 ```c++
 struct F { std::optional<T> operator() (T t); };
@@ -258,7 +258,7 @@ auto r3 = mbind(std::move(r2), G{});
 //                        ^~~ unwrapped implicitly
 ```
 
-`mbind` defined for `std::optional` works here as [`>>=` defined for `Maybe`](http://hackage.haskell.org/package/base-4.10.1.0/docs/src/GHC.Base.html#local-6989586621679017702) monad. There may be multiple `mbind` functions (`>>=`) defined for each container (`Monad` instance). Note that only a single layer of abstraction is unwrapped in order to fetch the stored value.
+`mbind` defined for `std::optional` works here as [`>>=` defined for `Maybe`](http://hackage.haskell.org/package/base-4.10.1.0/docs/src/GHC.Base.html#local-6989586621679017702) monad. There may be multiple "overloaded" `mbind` functions (`>>=`), each one defined for different container type (a `Monad` instance). Note that only a single layer of abstraction is unwrapped in order to fetch the stored value.
 
 
 Above defined `mbind` works for unary functions only. To enable it for functions of arbitrary arity we have to take a closer look at the algorithm itself.
@@ -288,7 +288,7 @@ mbind(std::optional<T>&& v
 }
 ```
 
-We apply `f` only if none of the arguments to be passed to it is `nullopt`, otherwise we return `nullopt`. Example implementation where the "container" is denoted by `R` parameter:
+We apply `f` only if none of the arguments to be passed to it is `nullopt`, otherwise we return `nullopt`. Example implementation where the "container" is denoted by `R` parameter follows:
 
 ```c++
 template<class R, class F, class... As>
@@ -333,7 +333,7 @@ template<class U> struct is_optional                   : std::false_type {};
 template<class U> struct is_optional<std::optional<U>> : std::true_type  {};
 ```
 
-&mdash; and usage:
+&mdash; and an example usage is:
 
 ```c++
 using T = int;  // for exposition only
@@ -355,7 +355,7 @@ error: invalid use of void expression
 
 ## Composition through binding
 
-Unfortunately, the following won't compile because we have explicitly fixed the `R` type, that does not match the result type from the of the lambda expression:
+Unfortunately, the following snippet won't compile because we have explicitly fixed the `R` type, that does not match the result type of the lambda expression passed:
 
 ```c++
 using R = std::optional<T>;  // T is int -- for exposition only
@@ -368,7 +368,7 @@ error: no matching function for call to 'std::optional<int>::optional(std::tuple
 */
 ```
 
-In order to overcome that we would have to specify `R` as a parametrised type constructor, i.e. a template for which parameter we have to figure out. In our case it would be `std::optional<?>` where `?` is going to be computed based on the type of input arguments. Simply "unfixing" the `R` type triggers and error that is a consequence of non-constexpr `if` block controlled by `is_set` (see (\*)  for details):
+In order to overcome that we would have to specify `R` as a parametrised type constructor, i.e. a template for which we have to figure out the actual parameters. In our case it would be `std::optional<?>` where `?` is going to be computed based on the types of input arguments. Simply "unfixing" the `R` type triggers and error that is a consequence of a non-constexpr `if` block controlled by `is_set` (see (\*)  for details). Example code:
 
 ```c++
 template<template<class...> class R, class F, class... As>
@@ -408,7 +408,7 @@ error: inconsistent deduction for auto return type:
 */
 ```
 
-We have to either disable one of the branches of the mentioned `if` block to make the deduction succeed, or calculate the common type, then use its default constructor (that works for `std::optional` and leads to an object that does not contain a value). Following code snippet implements the mentioned technique:
+We have to either disable one of the branches of the mentioned `if` block to make the deduction succeed, or calculate the common type, then use its default constructor (e.g. for `std::optional` it leads to an object that does not contain a value). Following code snippet implements the mentioned technique:
 
 ```c++
 template<template<class...> class R, class F, class... As>
@@ -448,7 +448,7 @@ constexpr auto mbind_all(F&& f, As&&... args)
 }
 ```
 
-Note that `isset` and `unwrap` are `std::optional`-specific. To make `mbind_all` working for an arbitrary `R` the affected actions (`wrap`, `unwrap`, `is_set`) and value returned upon computation failure are abstracted into `mbind_all_impl` tagged with `R`:
+Note that `isset` and `unwrap` are `std::optional`-specific. To make `mbind_all` working for an arbitrary `R`, the affected actions (`wrap`, `unwrap`, `is_set`) and the value returned upon computation failure are abstracted into `mbind_all_impl` tagged with `R`:
 
 ```c++
 template<template<class...> class R, class F, class... As>
@@ -524,7 +524,7 @@ mbind_all<std::optional>  //                                       ,~~~ makes co
     .value();  // terminate called after throwing an instance of 'std::bad_optional_access'
 ```
 
-Note that the container `R` has to defined explicitly (or deduced from the passed function object signature by means of an additional abstraction), thus regular application happens where un/wrapping is not required. Consider the following composition "chain":
+Note that the container `R` has to defined explicitly (or deduced from the passed function object's signature by means of an additional abstraction), thus the regular application happens where un/wrapping is not required. Consider the following composition "chain":
 
 ```c++
 struct F { std::optional<T> operator() (T t); };
@@ -544,7 +544,7 @@ Interestingly, we cannot mix the containers of different types in a single `mbin
 
 ## Chaining function objects
 
-Abstraction `mdind_all` can be incorporated into the `Chain` with a some effort. First step is to pass the `R` class template into the original type:
+Some effort is required to incorporate the `mdind_all` abstraction into the introduced already `Chain` abstraction. First step is to parametrise the original abstraction with the `R` class template:
 
 ```c++
 template<template<class...> class R, class... Ts>
@@ -594,7 +594,7 @@ if constexpr (I < std::tuple_size_v<sequence_type>)
 }
 ```
 
-&mdash; where `do_mbind_all` does the thing described i.a. in [P0834R0](http://wg21.link/P0834R0), it lifts overload set into an object. Simply passing `mbind_all<R>` into `std::apply` leads to unresolved overload error. Here is the implementation of the mentioned lift action:
+&mdash; where `do_mbind_all` does the thing described in i.a. [P0834R0](http://wg21.link/P0834R0), it lifts the overload set into an object. Simply passing `mbind_all<R>` into `std::apply` leads to unresolved overload error. Here is the implementation of the mentioned lift action:
 
 ```c++
 static constexpr auto do_mbind_all =
@@ -604,12 +604,12 @@ static constexpr auto do_mbind_all =
   };
 ```
 
-Since `mbind_all` implicitly wraps the result value into `R` abstraction, we end up quickly with overly nested abstractions. That's fixed by additional unwrapping of the result value returned in the subsequent step.
+Since `mbind_all` implicitly wraps the result value into the `R` abstraction, we can end up quickly with overly nested abstractions. That's fixed by an additional unwrapping of the result value returned in the subsequent step.
 
 See live code on Coliru [here](http://coliru.stacked-crooked.com/a/1f91f9fe4e7b069f).
 
 #### About this document
 
-February 23--28, 2018 &mdash; Krzysztof Ostrowski
+February 23, 2018; March 5, 2018 &mdash; Krzysztof Ostrowski
 
 [LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
