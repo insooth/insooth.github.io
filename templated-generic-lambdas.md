@@ -14,7 +14,7 @@ auto wrong = [](auto x) { return T{x}; };
 //       but it introduces a variable template rather than a templated generic lambda.
 ```
 
-Some steps towards templated generic lambdas will taken in C++20 as proposed in [P0428](http://wg21.link/p0428). For the time of being, a simple technique that emulates templated generic lambdas proposed in this article may be reused.
+Some steps towards templated generic lambdas will taken in C++20 as proposed in [P0428](http://wg21.link/p0428). Unfortunately, explicit specification of parameter types is still [not possible](https://godbolt.org/g/Uf8mCV). For the time of being, a simple technique that emulates templated generic lambdas proposed in this article may be reused.
 
 ## Motivation
 
@@ -67,7 +67,7 @@ template<class T>
 using identity_type = std::common_type<T>;
 ```
 
-Example usage follows:
+Example usage:
 
 ```
 std::variant<T, U> c{U{}};  // U::value_type accepts hours
