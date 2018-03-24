@@ -3,7 +3,7 @@
 
 One of the greatest advantages of [lambda expressions](http://en.cppreference.com/w/cpp/language/lambda) is their locality. It is really comfortable to reason about the code if the most of its parts is in the near scope, and the inversion of control is limited. On the other hand, optimiser's life is much easier with lambdas (they are just syntactic sugar, thus their actual structure is defined by the compiler). Moreover, lambdas' opaque mangled names can [drastically reduce compile times](https://lists.boost.org/Archives/boost/2014/06/214215.php). Parametrically polymorphic (generic) lambda expressions introduce additional flexibility in algorithm implementation and minimise maintenance work.
 
-Paradoxically, generic lambda expressions in C++17 are somewhat _too_ generic. That characteristic announces itself in inability to fix the lambda parameters beforehand. Unlike in function templates, we cannot specify the parameter types explicitly to effectively disable template argument deduction from the passed arguments. Trying to define a lambda inside a function is not possible in C++17:
+Paradoxically, generic lambda expressions in C++17 are somewhat _too_ generic. That characteristic announces itself in inability to fix the lambda parameters beforehand. Unlike in function templates, we cannot specify the parameter types explicitly to effectively disable template argument deduction from the passed arguments. Trying to define the following lambda expression inside a function is not possible in C++17:
 
 ```c++
 template<class T>
