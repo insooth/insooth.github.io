@@ -14,7 +14,7 @@ auto wrong = [](auto x) { return T{x}; };
 //       but it introduces a variable template rather than a templated generic lambda.
 ```
 
-Some steps towards templated generic lambdas will taken in C++20 as proposed in [P0428](http://wg21.link/p0428). Unfortunately, explicit specification of parameter types is still [not possible](https://godbolt.org/g/t9S6iS). For the time of being, a simple technique that emulates templated generic lambdas proposed in this article may be reused.
+Some steps towards templated generic lambdas will be taken in C++20 as proposed in [P0428](http://wg21.link/p0428). Unfortunately, explicit specification of parameter types is still [not possible](https://godbolt.org/g/t9S6iS). For the time of being, a simple technique that emulates templated generic lambdas proposed in this article may be reused.
 
 ## Motivation
 
@@ -36,7 +36,7 @@ auto foo = [](std::variant<T, U>& c, auto v)
 };
 ```
 
-Of course, one can take brute-force to obtain the required type information. For instance, one may call [`get_if`](http://en.cppreference.com/w/cpp/utility/variant/get_if) and check the returned result value for all the possible cases; or may continue to catch `bad_variant_access` exceptions until there is no more exceptions thrown. For all the possible cases, hard-coded. By doing that, one can reach new levels of silliness. Don't do that. It is even worse than banning the use of language features that improve code readability and safety because of buggy IDE's built-in syntax checker.
+Of course, one can take brute-force to obtain the required type information. For instance, one may call [`get_if`](http://en.cppreference.com/w/cpp/utility/variant/get_if) and check the returned result value for all the possible cases; or may continue to catch `bad_variant_access` exceptions until there is no more exceptions thrown, for all the possible cases, hard-coded. By doing that, one can reach new levels of silliness. Don't do that. It is even worse than banning the use of language features that improve code readability and safety because of a bug in an IDE's built-in syntax checker.
 
 ## Solution
 
@@ -60,7 +60,7 @@ auto bar = [](std::variant<T, U>& c, auto v, auto w)
 };
 ```
 
-We can pass any object as third argument to `bar`, the only constraint is that the type of that value has to expose nested `typedef` named `type`. Its our responsibility to pass as little data in `w` as possible. Ideally, we choose a type that [is empty](http://en.cppreference.com/w/cpp/types/is_empty). That's easily achievable with `std::common_type` acting as an identity metafunction:
+We can pass any object as third argument to `bar`, the only constraint is that the type of that object has to expose a nested `typedef` named `type`. It's our responsibility to pass as little data in `w` as possible. Ideally, we choose a type that [is empty](http://en.cppreference.com/w/cpp/types/is_empty). That's easily achievable with `std::common_type` acting as an identity metafunction:
 
 ```c++
 template<class T>
