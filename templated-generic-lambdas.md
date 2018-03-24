@@ -14,7 +14,7 @@ auto wrong = [](auto x) { return T{x}; };
 //       but it introduces a variable template rather than a templated generic lambda.
 ```
 
-Some steps towards templated generic lambdas will taken in C++20 as proposed in [P0428](http://wg21.link/p0428). Unfortunately, explicit specification of parameter types is still [not possible](https://godbolt.org/g/Uf8mCV). For the time of being, a simple technique that emulates templated generic lambdas proposed in this article may be reused.
+Some steps towards templated generic lambdas will taken in C++20 as proposed in [P0428](http://wg21.link/p0428). Unfortunately, explicit specification of parameter types is still [not possible](https://godbolt.org/g/t9S6iS). For the time of being, a simple technique that emulates templated generic lambdas proposed in this article may be reused.
 
 ## Motivation
 
