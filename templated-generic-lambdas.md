@@ -38,7 +38,7 @@ auto foo = [](std::variant<T, U>& c, auto v)
 
 Of course, one can take brute-force to obtain the required type information. For instance, one may call [`get_if`](http://en.cppreference.com/w/cpp/utility/variant/get_if) and check the returned result value for all the possible cases; or may continue to catch `bad_variant_access` exceptions until there is no more exceptions thrown. For all the possible cases, hard-coded. By doing that, one can reach new levels of silliness. Don't do that. It is even worse than banning the use of language features that improve code readability and safety because of buggy IDE's built-in syntax checker.
 
-# Solution
+## Solution
 
 We would like to pass the additional information into `foo`. In order to do that we have to embed the required type information into a dummy value of some type (in which are not interested, in fact), and pass that value as an extra argument to the lambda. In the body of the generic lambda the passed type information is recovered.
 
