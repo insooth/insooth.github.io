@@ -1,7 +1,7 @@
 
 # Emulating templated generic lambda expressions
 
-One of the greatest advantages of [lambda expressions](http://en.cppreference.com/w/cpp/language/lambda) is their locality. It is really comfortable to reason about the code if the most of its parts is in the "near" scope, and the inversion of control is limited. On the other hand, optimiser's life is much easier with lambdas (they are just syntactic sugar, thus their actual structure is defined by the compiler). Moreover, lambdas' opaque mangled names can [drastically reduce compile times](https://lists.boost.org/Archives/boost/2014/06/214215.php). Parametrically polymorphic (generic) lambda expressions introduce additional flexibility in algorithm implementation and minimise maintenance work.
+One of the greatest advantages of [lambda expressions](http://en.cppreference.com/w/cpp/language/lambda) is their locality. It is really comfortable to reason about the code if the most of its parts are in the "near" scope, and the inversion of control is limited. On the other hand, optimiser's life is much easier with lambdas (they are just syntactic sugar, thus their actual structure is defined by the compiler). Moreover, lambdas' opaque mangled names can [drastically reduce compile times](https://lists.boost.org/Archives/boost/2014/06/214215.php). Parametrically polymorphic (generic) lambda expressions introduce additional flexibility in algorithm implementation and minimise maintenance work.
 
 Paradoxically, generic lambda expressions in C++17 are somewhat _too_ generic. That characteristic announces itself in inability to fix the lambda parameters in advance. Unlike in function templates, we cannot specify the parameter types explicitly to effectively disable template argument deduction from the passed function arguments. Trying to define the following lambda expression inside a function is not possible in C++17:
 
@@ -14,7 +14,7 @@ auto wrong = [](auto x) { return T{x}; };
 //       but it introduces a variable template rather than a templated generic lambda.
 ```
 
-Some steps towards templated generic lambdas will be taken in C++20 as proposed in [P0428](http://wg21.link/p0428). Unfortunately, explicit specification of parameter types is still [not possible](https://godbolt.org/g/t9S6iS). Such a feature is likely to require conditionally parametrised enclosing (generated) lambda `class` type. For the time being, a simple technique that emulates templated generic lambdas proposed in this article may be reused.
+Some steps towards templated generic lambdas are going to be taken in C++20 as proposed in [P0428](http://wg21.link/p0428). Unfortunately, explicit specification of parameter types is still [not possible](https://godbolt.org/g/t9S6iS). Such a feature is likely to require a conditionally parametrised enclosing (generated) lambda `class` type. For the time being, a simple technique that emulates templated generic lambdas proposed in this article may be reused.
 
 ## Motivation
 
@@ -40,7 +40,7 @@ Of course, one can take brute-force to obtain the required type information. For
 
 ## Solution
 
-We would like to pass the additional information into `foo`. In order to do that we have to embed the required type information into a dummy value of some type (in which are not interested, in fact), and pass that value as an extra argument to the lambda. The passed type information is recovered in the body of the generic lambda.
+We would like to pass the additional information to the `foo` lambda. In order to do that we have to embed the required type information into a dummy value of some type (in which are not interested, in fact), and pass that value as an extra argument to the lambda. The passed type information is recovered in the body of the generic lambda.
 
 ```c++
 auto bar = [](std::variant<T, U>& c, auto v, auto w)
