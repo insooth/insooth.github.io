@@ -24,6 +24,8 @@ Let's forget about the headache-provoking details for a while and approach the p
 
 The middle part can be done in parallel, providing that there is no inter-data dependencies that prevent from that. If done in parallel, the last step can be understood as a synchronisation point for asynchronous conversion tasks.
 
+To generalise even further, we may think of a conversion as a pair of actions, where first is a "getter" applied to the original data, and the second is the "setter" applied to the data returned by the "getter". The "setter" in the example changes the received data type. That's the idea of [Profunctor Optics](https://arxiv.org/abs/1703.10857) in fact &mdash; in our case &mdash; combined with a _state_ which is used to build up the result data.
+
 #### About this document
 
 May xx, 2018 &mdash; Krzysztof Ostrowski
