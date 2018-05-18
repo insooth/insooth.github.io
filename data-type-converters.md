@@ -15,6 +15,14 @@ repeated `for (const auto& item : items) others.push_back(convert(item))` | gene
 
 ## How does it work
 
+It is relatively easy to write converters between simple abstractions like enumerations and [fundamental types](http://en.cppreference.com/w/cpp/language/types). Since we are interested in conversions of _data values_, reference/pointer/function type and type qualifiers (like `const`) transformations are not discussed in this article. What's left in our scope are array types and classes. Having in mind that an array (or any other sequence of data, like `std::vector` or `std::map`) is just a way to organise values of some type, we can easily generalise the conversion to a mapping of a item-dedicated (fine-grained) `convert` function over the original sequence. Things are getting complicated for nested types and custom `class`es. Things are getting even more complicated for _sum_ types like `std::optional` or `std::variant` (just think about the data access).
+
+Let's forget about the headache-provoking details for a while and approach the problem using top-down strategy. Question is: what does it mean _to convert_ a data type? We definitely need to inspect the data type structure, i.e. _unwrap_ its abstraction or just some layers of it. Conversion comprises (roughly) three steps:
+* querying the original data type to select the interesting part,
+* recursively traversing the selected part and applying the fine-grained conversions,
+* assembling the converted bricks to generate the data of the desired type.
+
+The middle part can be done in parallel, providing that there is no inter-data dependencies that prevent from that. If done in parallel, the last step can be understood as a synchronisation point for asynchronous conversion tasks.
 
 #### About this document
 
