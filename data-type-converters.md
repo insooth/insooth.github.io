@@ -15,3 +15,11 @@ repeated `for (const auto& item : items) others.push_back(convert(item))` | gene
 
 ## How does it work
 
+
+#### About this document
+
+May xx, 2018 &mdash; Krzysztof Ostrowski
+
+[LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
+
+
