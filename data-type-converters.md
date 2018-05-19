@@ -9,8 +9,8 @@ Wrong | Better
 ---   | ---
 `void convertAppleToOrange(const Apple&, Orange&)` | `Orange convert(const Apple&)`
 `Orange* /* allocates memory */ convertAppleToNewOrange(const Apple&)` | `std::unique_ptr<Orange> convert(const Apple&)`
-`/* may fail (gives nullptr) but not throw */` `B* convert(const A&, B&)`| `std::optional<B> convert(const A&)`
 `B convert(A&)` | `B convert(const A&)` or (even better if in generic context) `B convert(A)`
+`/* may fail (gives nullptr) but do not throw */` `B* convert(const A&, B&)`| `std::optional<B> convert(const A&)` or (if never throws) `std::optional<B> convert(const A&) noexcept`
 `/* using Int = int; */` `EnumA convert(Int)` and `EnumB convert(Int)`  | `convert<EnumA>(Int)` and `convert<EnumB>(Int)` that are instances of `template<class T> std::enable_if_t<any_v<T, EnumA, EnumB>, T> convert(Int)` where `template<class T, class... Ts> class any;`
 repeated `for (const auto& item : items) others.push_back(convert(item))` | generalise over all the [`SequenceContainer`](http://en.cppreference.com/w/cpp/concept/SequenceContainer) models: `SequenceContainer convert(const SequenceContainer&) { /* map convert(...) over input */ }`
 
