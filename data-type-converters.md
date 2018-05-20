@@ -64,6 +64,36 @@ That is, in the simplest case, having a pre-processing function `f` from `A'` to
 
 The required composition is done by the Profunctor interface function called [`dimap`](http://hackage.haskell.org/package/profunctors-5.2.2/docs/Data-Profunctor.html#v:dimap) that translates some `A'` values into some `B'` values using supplied converter. The magic here, is that the abstraction produced by `dimap` is a Profunctor itself (a converter wrapped into additional data processing), thus it can be composed with another pre- and post-processing actions, and so on.
 
+Slightly contrived example for `std::function` (i.e. `→`) acting as the simplest model of Profunctor concept ([live code on Coliru](http://coliru.stacked-crooked.com/a/51a1057a23303580)) follows:
+
+```c++
+template<class X, class Y> using P = std::function<Y (X)>;
+
+using A = int;
+using B = int;
+
+struct S { A a; B b; };
+using  T = std::variant<B, double>;
+
+T runDimap(std::function<A (S)> f
+         , std::function<T (B)> g
+         , P<A, B> h
+         , S s)
+{
+    return g(h(f(s)));
+}
+
+auto t = 
+    runDimap([](S s) { return s.a; }         // pre-processing, getter via Lens
+           , [](B b) { return T{b}; }        // posprocessing, setter via Prism
+           , [](A a) { return B{a + 100}; }  // conversion via Iso
+           , S{11, 22}                       // we go from S to T
+           );
+
+// t is {111}
+```
+
+
 #### About this document
 
 May 19, 2018 &mdash; Krzysztof Ostrowski
