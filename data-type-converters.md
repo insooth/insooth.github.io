@@ -64,7 +64,7 @@ That is, in the simplest case, having a pre-processing function `f` from `A'` to
 
 The required composition is done by the Profunctor interface function called [`dimap`](http://hackage.haskell.org/package/profunctors-5.2.2/docs/Data-Profunctor.html#v:dimap) that translates some `A'` values into some `B'` values using supplied converter. The magic here, is that the abstraction produced by `dimap` is a Profunctor itself (a converter wrapped into additional data processing), thus it can be composed with another pre- and post-processing actions, and so on.
 
-Slightly contrived example for `std::function` (i.e. `→`) acting as the simplest model of Profunctor concept ([live code on Coliru](http://coliru.stacked-crooked.com/a/51a1057a23303580)) follows:
+Slightly contrived example for `std::function` (i.e. `→`) acting as the simplest model of Profunctor concept ([live code on Coliru](http://coliru.stacked-crooked.com/a/bd38e6b94d99300e)) follows:
 
 ```c++
 template<class X, class Y> using P = std::function<Y (X)>;
@@ -91,6 +91,34 @@ auto t =
            );
 
 // t is {111}
+```
+
+Composition is pretty straightforward:
+
+```c++
+template<class AS, class BT, class AB>
+auto dimap(AS f, BT g, AB h)
+{
+    return [=](auto s) { return g(h(f(s))); }; 
+}
+
+// conversion sequence: S::a to B{a + 10},
+//                      then to T,
+//                      then to optional<B> with value if T holds B of value > 100
+
+auto toMaybeB = 
+  dimap([](auto x) { return x; }  // identity function
+      , [](T t)    { return (std::holds_alternative<B>(t) && (std::get<B>(t) > 100))
+                              ? std::optional<B>{std::get<B>(t)}  // redundant check: for exposition only
+                              : std::nullopt; }
+      , dimap([](S s) { return s.a; }
+            , [](B b) { return T{b}; }
+            , [](A a) { return B{a + 10}; }
+            )
+        );
+
+// toMaybeB(S{100, 2}) is {110}
+// toMaybeB(S{0, 2})   is std::nullopt
 ```
 
 
