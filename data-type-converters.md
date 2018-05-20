@@ -121,6 +121,11 @@ auto toMaybeB =
 // toMaybeB(S{0, 2})   is std::nullopt
 ```
 
+## Isos, Lenses, Prisms and Traversals
+
+Unfortunately, at the time of writing, there is no production-ready C++ library that implements law-abiding Profunctor Optics available. Several experimental libraries exists, but those typically do not include Prisms and have limited support for Traversals.
+
+The idea of Profunctor Optics is worth spreading as a general composable way of accessing and transforming nested data structures. Provided in this article example application followed by code snippets presents only a tip of the iceberg of the expressive power that Optics offer.
 
 #### About this document
 
