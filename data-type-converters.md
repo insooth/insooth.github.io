@@ -84,9 +84,9 @@ T runDimap(std::function<A (S)> f
 }
 
 auto t = 
-    runDimap([](S s) { return s.a; }         // pre-processing, getter ("view") via Lens
-           , [](B b) { return T{b}; }        // posprocessing, setter ("build") via Prism
-           , [](A a) { return B{a + 100}; }  // conversion ("from") via Iso
+    runDimap([](S s) { return s.a; }         // pre-processing
+           , [](B b) { return T{b}; }        // posprocessing
+           , [](A a) { return B{a + 100}; }  // conversion
            , S{11, 22}                       // we go from S to T
            );
 
