@@ -16,7 +16,7 @@ repeated `for (const auto& item : items) others.push_back(convert(item))` | gene
 
 ## How does it work
 
-It is relatively easy to write converters between simple abstractions like enumerations and [fundamental types](http://en.cppreference.com/w/cpp/language/types). Since we are interested in conversions of _data values_, reference/pointer/function type and type qualifiers (like `const`) transformations are not discussed in this article. What's left in our scope are array types and classes. Having in mind that an array (or any other sequence of data, like `std::vector` or `std::map`) is just a way to organise values of some type, we can easily generalise the conversion to a mapping of a item-dedicated (fine-grained) `convert` function over the original sequence. Things are getting complicated for nested types and custom `class`es. Things are getting even more complicated for _sum_ types like `std::optional` or `std::variant` (just think about the data access).
+It is relatively easy to write converters between simple abstractions like enumerations and [fundamental types](http://en.cppreference.com/w/cpp/language/types). Since we are interested in conversions of _data values_, reference/pointer/function type and type qualifiers (like `const`) transformations are not discussed in this article. What's left in our scope are array types and classes. Having in mind that an array (or any other sequence of data, like `std::vector` or `std::map`) is just a way to organise values of some type, we can easily generalise the conversion to a mapping of an item-dedicated (fine-grained) `convert` function over the original sequence. Things are getting complicated for nested types and custom `class`es. Things are getting even more complicated for _sum_ types like `std::optional` or `std::variant` (just think about the data access).
 
 Let's forget about the headache-provoking details for a while and approach the problem using top-down strategy. Question is: what does it mean _to convert_ a data type? We definitely need to inspect the data type structure, i.e. _unwrap_ its abstraction or just some layers of it. Conversion comprises (roughly) three steps:
 * querying the original data type to select the interesting part,
@@ -25,7 +25,7 @@ Let's forget about the headache-provoking details for a while and approach the p
 
 The middle part can be done in parallel, providing that there is no inter-data dependencies that prevent from that. If done in parallel, the last step can be understood as a synchronisation point for asynchronous conversion tasks.
 
-To generalise even further, we may think of a conversion as a pair of actions, where first is a "getter" applied to the original data, and the second is the "setter" applied to the data returned by the "getter". The "setter" in the example changes the received data type. That's the idea of [Profunctor Optics](https://arxiv.org/abs/1703.10857) in fact &mdash; in our case &mdash; combined with a _state_ which is used to build up the result data.
+To generalise even further, we may think of a conversion as a pair of actions, where first is a "getter" applied to the original data, and the second is the "setter" applied to the data returned by the "getter". The "setter" in the example changes the received data's type. That's the idea of [Profunctor Optics](https://arxiv.org/abs/1703.10857) in fact &mdash; in our case &mdash; combined with a _state_ which is used to build up the result data.
 
 ## What can be a converter
 
@@ -41,28 +41,28 @@ The C++'s `s.b = bb` turns out to be a very interesting construction. While `s.b
 ```
 struct S { A a; B b; };
 
-s.a;  // requires information on both S and A types -- gives value of type A
+s.a;  // requires information on both S and A types -- gives a value of type A
       // in imaginary prefix notation: template<class A, class S> A .(const S&)
 
 
-B b;
+B bb;
 s.b;      // gives value of type B, information about both S and B types is required
 s.b = ... // ...but now left of "=" is of type B&
-s.b = b;  // type of this expression should be S back
+s.b = bb; // type of this expression should be S back
           //   NOTE: C++ yields here value of type B
-          //         effectively disabling further composition like: (s.b = b).a = aa
+          //         effectively disabling further composition like: (s.b = bb).a = aa
           // in imaginary prefix notation: template<class S, class B> S& =(S&, B)
 ```
 
 In analogous way, accessors to sum types (like `std::variant` or `std::optional`) can be derived.
 
-In the Optics world, a minimal "converter" with interface that exposes two actions, `S → A` &mdash; "from", "view", "match", "downcast", "get", "extract", etc.; and `B → T` &mdash; "to", "update", "build", "upcast", "set", etc.; where `A` and `B` are any types that may even include `S`; is called `Adapter` or `Iso`. Converters for sum types are called `Prism`s, while for C++ "regular" (_product_ like `std::pair` or `std::tuple`) are called `Lens`. To convert types that can be iterated over (like `std::vector` or `std::map`), `Traversal`s are used.
+In the Optics world, a minimal "converter" with interface that exposes two actions, `S → A` &mdash; "from", "view", "match", "downcast", "get", "extract", etc.; and `B → T` &mdash; "to", "update", "build", "upcast", "set", etc.; where `A` and `B` are any types that may even combine with `S`; is called `Adapter` or `Iso`. Converters for sum types are called `Prism`s, while for a C++ "regular" types (_product_ like `std::pair` or `std::tuple`) are called `Lens`. To convert types that can be iterated over (like `std::vector` or `std::map`), `Traversal`s are used.
 
-The Profunctor abstraction wraps given Optic (a "converter") into a composable abstraction. The wrapper adds layers of pre- and post-processing to the converter itself, and forces the user to provide the code that does the actual composition.
+The Profunctor abstraction wraps given Optic (a "converter") into a composable abstraction. The wrapper adds layers of pre- and post-processing to the converter itself, and forces the user to provide implementation that does the actual composition.
 
 That is, in the simplest case, having a pre-processing function `f` from `A'` to `A`, and a post-processing function `g` from `B` to `B'` we can compose given converter `h` from `A` to `B` by simply composing the actions &mdash; `g . h . f` (`g` after `h` after `f`).
 
-The required composition is done by the Profunctor interface function called [`dimap`](http://hackage.haskell.org/package/profunctors-5.2.2/docs/Data-Profunctor.html#v:dimap) that translates some `A'` values into some `B'` values using supplied converter. The magic here, is that the abstraction produced by `dimap` is a Profunctor itself (a converter wrapped into additional data processing), thus it can be composed with another pre- and post-processing actions, and so on.
+The required composition is done by the Profunctor interface function called [`dimap`](http://hackage.haskell.org/package/profunctors-5.2.2/docs/Data-Profunctor.html#v:dimap) that translates some `A'` values into some `B'` values using the supplied converter. The magic here, is that the abstraction produced by `dimap` is a Profunctor's model itself (an Optic with additional data processing), thus it can be composed with another pre- and post-processing actions, and so on.
 
 Slightly contrived example for `std::function` (i.e. `→`) acting as the simplest model of Profunctor concept ([live code on Coliru](http://coliru.stacked-crooked.com/a/bd38e6b94d99300e)) follows:
 
@@ -123,7 +123,7 @@ auto toMaybeB =
 
 ## Isos, Lenses, Prisms and Traversals
 
-Unfortunately, at the time of writing, there is no production-ready C++ library that implements law-abiding Profunctor Optics available. Several experimental libraries exists, but those typically do not include Prisms and have limited support for Traversals.
+Unfortunately, at the time of writing, there is no production-ready C++ library that implements law-abiding Profunctor Optics available. Several experimental implementations exists, but those typically do not include Prisms and have limited support for Traversals.
 
 The idea of Profunctor Optics is worth spreading as a general composable way of accessing and transforming nested data structures. Provided in this article example application followed by code snippets presents only a tip of the iceberg of the expressive power that Optics offer.
 
