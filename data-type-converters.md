@@ -14,7 +14,7 @@ Wrong | Better
 `/* using Int = int; */` `EnumA convert(Int)` and `EnumB convert(Int)`  | `convert<EnumA>(Int)` and `convert<EnumB>(Int)` that are instances of `template<class T> std::enable_if_t<any_v<T, EnumA, EnumB>, T> convert(Int)` where `template<class T, class... Ts> class any;`
 repeated `for (const auto& item : items) others.push_back(convert(item))` | generalise over all the [`SequenceContainer`](http://en.cppreference.com/w/cpp/concept/SequenceContainer) models: `SequenceContainer convert(const SequenceContainer&) { /* map convert(...) over input */ }`
 
-## How does it work
+## How it works
 
 It is relatively easy to write converters between simple abstractions like enumerations and [fundamental types](http://en.cppreference.com/w/cpp/language/types). Since we are interested in conversions of _data values_, reference/pointer/function type and type qualifiers (like `const`) transformations are not discussed in this article. What's left in our scope are array types and classes. Having in mind that an array (or any other sequence of data, like `std::vector` or `std::map`) is just a way to organise values of some type, we can easily generalise the conversion to a mapping of an item-dedicated (fine-grained) `convert` function over the original sequence. Things are getting complicated for nested types and custom `class`es. Things are getting even more complicated for _sum_ types like `std::optional` or `std::variant` (just think about the data access).
 
