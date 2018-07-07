@@ -6,7 +6,7 @@ In the typical design targeted C++ language actions are functions (no matter whe
 
 Definition of actions is not a trivial task, and if done wrong, we may not end up in bags of setters and getters (known as [Anemic Domain Model](https://martinfowler.com/bliki/AnemicDomainModel.html) anti-pattern). The resulting abstraction that embeds the defined actions does not have to be a set of `virtual` member functions wrapped into a `class` from which implementations exposed to the user derive. Actually, the blind `virtual`ity brought by such approach comes with more cons than pros. General guideline promoted in this article is to expose non-`virtual` interfaces to the user while providing a _customisation point_ in the form of minimal set of actions that can be combined with each other. 
 
-## Customisation
+## Customise
 
 Used in this article definition of the customisation point differs from the STL one (cf. `std::hash`). We do not lift our type into a generic one, and then use the compiler to select the appropriate specialisation in the first place (like it is done for `std::hash`). Instead we specify a fixed type `Interface` with a constructor that takes, as one of its arguments, an object with custom implementation. That object shall derive from a type that is an instance of `Backend` template, a fixed type specialised for our interface, i.e. `Backend<Interface>`. Customisation point is *polymorphic* in the object-oriented sense, i.e. it is not a fixed part of a type, and can be specified during runtime. That's a big win, as it was with [PMR](https://en.cppreference.com/w/cpp/memory/polymorphic_allocator).
 
