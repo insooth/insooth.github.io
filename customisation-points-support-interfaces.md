@@ -20,18 +20,18 @@ TODO
 <pre lang="cpp">
 class Interface
 {
- public:
-  virtual R foo(A);
+public:
+ virtual R foo(A);
 };
 <br>
 class Implementation : public Interface
 {
- public:
-  R foo(A) override;
-//         ^^^^^^^^^
+public:
+ R foo(A) override;
+//        ^^^^^^^^^
 <br>
-  virtual ~Implementation() = default;
-//^^^^^^^
+ virtual ~Implementation() = default;
+//^^^^^^
 };
 </pre>
 </td>
@@ -39,17 +39,17 @@ class Implementation : public Interface
 <pre lang="cpp">
 class Interface
 {
-  // magic here
+ // magic here
 <br>
-  constexpr Backend&lt;Interface&gt;&amp; backend();
-  constexpr const Backend&lt;Interface&gt;&amp; backend() const;
+ constexpr Backend&lt;Interface&gt;&amp; backend();
+ constexpr const Backend&lt;Interface&gt;&amp; backend() const;
 <br>
- public:
+public:
 <br>
-  Interface();  // sets default backend
-  Interface(Backend&lt;Interface&gt;&amp;);  // injects backend
+ Interface();  // sets default backend
+ Interface(Backend&lt;Interface&gt;&amp;);  // injects backend
 <br>
-  U bar(T);  // uses actions via backend()
+ U bar(T);  // uses actions via backend()
 };
 <br>
 // where
@@ -59,8 +59,8 @@ template&lt;class Tag&gt; class Backend;
 template&lt;&gt;
 class Backend&lt;Interface&gt;
 {
- public:
-  virtual R foo(A);
+public:
+ virtual R foo(A);
 };
 </pre>
 </td>
