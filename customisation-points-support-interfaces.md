@@ -10,7 +10,7 @@ Definition of actions is not a trivial task, and if done wrong, we may not end u
 
 Used in this article definition of the customisation point differs from the STL one (cf. `std::hash`). We do not lift our type into a generic one, and then use the compiler to select the appropriate specialisation in the first place (like it is done for `std::hash`). Instead we specify a fixed type `Interface` with a constructor that takes, as one of its arguments, an object with custom implementation. That object shall derive from a type that is an instance of `Backend` template, a fixed type specialised for our interface, i.e. `Backend<Interface>`. Customisation point is *polymorphic* in the object-oriented sense, i.e. it is not a fixed part of a type, and can be specified during runtime. That's a big win, as it was with [PMR](https://en.cppreference.com/w/cpp/memory/polymorphic_allocator).
 
-Following snippet visualises the idea of a customisation point. We may either use the default resource with implementation, or just reference it. In the former case we create and *own* the resource, while in the latter we are just the observer of an injected resource (it is a *shared state*, thus must be thread-safe). The injection possibility enables our type for testing, and reuse with replaced _backend_.
+Following snippet visualises the idea of a customisation point. We may either use the default resource with implementation, or just reference it. In the former case we create and *own* the resource, while in the latter we are just the observer of an injected resource (it is a *shared state*, thus must be thread-safe). The injection possibility enables our type for testing, and reuse with replaced _backend_ (cf. dependency injection).
 
 <table style="white-space: pre">
 <tr>
@@ -68,6 +68,14 @@ public:
 </td>
 </tr>
 </table>
+
+There are even more benefits that come from the polymorphic customisation points. Since we [do not expose `virtual` member functions](http://www.gotw.ca/publications/mill18.htm) (but we build functionalities on them) we can employ extended type checks. We can expose templated interfaces, which is impossible with `virtual`s.
+
+Note that `Backend` template may act here as an implementation of a factory pattern. That may be not desirable for some designs that do not want to use such centralised control of subtyping.
+
+## Own or share
+
+TODO
 
 
 #### About this document
