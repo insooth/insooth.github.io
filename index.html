@@ -14,6 +14,20 @@
     Articles on software design and programming, C++ and language independent ideas.
     <ul>
       <li>
+        <a href="https://github.com/insooth/insooth.github.io/blob/master/customisation-points-support-interfaces.md" title="Customisation points to support interfaces">Customisation points to support interfaces</a>
+        <p class="abstract">
+          Definition of actions is not a trivial task, and if done wrong, we may not end up
+          in bags of setters and getters (known as Anemic Domain Model anti-pattern).
+          The resulting abstraction that embeds the defined actions does not have to be
+          a set of virtual member functions wrapped into a class from which implementations
+          exposed to the user derive.
+          Actually, the blind virtuality brought by such approach comes with more cons than pros.
+          General guideline promoted in this article is to expose non-virtual interfaces to
+          the user while providing a customisation point in the form of minimal set of actions that
+          can be combined with each other.
+        </p>
+      </li>
+      <li>
         <a href="https://github.com/insooth/insooth.github.io/blob/master/data-type-converters.md" title="Writing data type converters">Writing data type converters</a>
         <p class="abstract">
           Presentation of a generic approach to accessing and transforming nested data types using Profunctor Optics in C++17.
