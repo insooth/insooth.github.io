@@ -84,7 +84,7 @@ Interface(Backend<Interface>&);  // *shares* the ownership of the injected backe
 Interface(Backend<Interface>&&); // transfers ownership of the backend instance (owns)
 ```
 
-Constructors imply storage area for either the passed reference to the backend resource, or for the backend object itself (internally created or moved from the caller). Such data type for resource of type `T` is equivalent to ([why not use a raw reference type](https://github.com/insooth/insooth.github.io/blob/master/wrap-members-of-reference-type.md)):
+Constructors imply a storage area for either the passed reference to the backend resource, or for the backend object itself (internally created or moved from the caller). Such data type for a resource of type `T` is equivalent to ([why not a raw reference type](https://github.com/insooth/insooth.github.io/blob/master/wrap-members-of-reference-type.md)):
 
 ```
 variant<unique_ptr<T>, reference_wrapper<T>>
@@ -97,7 +97,7 @@ If you think about `union` or a single `T*` instead of a `variant` there is bad 
 
 Even if the `variant`-based approach is the simplest one, it has one drawback related to runtime dispatch required to determine the type of a value currently set. That's the equivalent to the boolean flag used in `T*`-based approach.
 
-We can eliminate that runtime check by own and share _simultaneously_. We either share and do not own, or own and share the owned resource.
+We can eliminate that runtime check by owning and sharing _simultaneously_. We either share and do not own, or own and share the owned resource.
 
 ```cpp
 struct Storage
@@ -115,7 +115,7 @@ struct Storage
 };
 ```
 
-If we use [`unique_ptr`](https://en.cppreference.com/w/cpp/memory/unique_ptr) we do not have to worry about the broken dependency of shared-to-owned because our type is neither [`CopyConstructible`](https://en.cppreference.com/w/cpp/named_req/CopyConstructible) nor [`CopyAssignable`](https://en.cppreference.com/w/cpp/named_req/CopyAssignable).
+If we use [`unique_ptr`](https://en.cppreference.com/w/cpp/memory/unique_ptr) we do not have to worry about the broken dependency of shared-to-owned because our type is already neither [`CopyConstructible`](https://en.cppreference.com/w/cpp/named_req/CopyConstructible) nor [`CopyAssignable`](https://en.cppreference.com/w/cpp/named_req/CopyAssignable).
 
 `Storage` type is not [`DefaultConstructible`](https://en.cppreference.com/w/cpp/named_req/DefaultConstructible) because [`reference_wrapper`](https://en.cppreference.com/w/cpp/utility/functional/reference_wrapper/reference_wrapper) is not. That's the difference between `variant`-based approach, where the `unique_ptr` type used as a first alternative type in the instance of `std::variant` [guarantees it is `DefaultConstructible`](https://en.cppreference.com/w/cpp/utility/variant/variant), because `unique_ptr` itself is `DefaultConstructible` (i.e. swapped alternative types will disable that property).
 
