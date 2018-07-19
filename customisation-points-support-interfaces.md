@@ -95,7 +95,7 @@ which is actually a valid C++ type.
 
 If you think about `union` or a single `T*` instead of a `variant` there is bad news for you. Union's [destructor needs to be defined explicitly](https://en.cppreference.com/w/cpp/language/union) to manage memory under `unique_ptr`, so that you will either leak memory or crash your application. In the latter case of `T*`, an additional flag will be required to distinguish between referenced and owned resource, and an implementation of all the constructors, copy-assignment operators and the destructor too &mdash; that's quite a lot of code that does not have to be written at all to get the _almost_ the same functionality as that provided by `variant`. Almost, because `unique_ptr` effectively disables copying, while `T*` does not.
 
-Even if the `variant`-based approach is the simplest one, it has one drawback related to runtime dispatch required to determine the type of a value currently set. That's the equivalent to the boolean flag used in `T*`-based approach.
+Even if the `variant`-based approach is the simplest one, it has one drawback related to the runtime dispatch required to determine the type of the value currently set. That's the equivalent to the boolean flag used in `T*`-based approach.
 
 We can eliminate that runtime check by owning and sharing _simultaneously_. We either share and do not own, or own and share the owned resource.
 
