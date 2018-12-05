@@ -83,7 +83,7 @@ enum class Error : std::uint8_t  // up to eight different types of errors
     INVALID_START
   , INVALID_START_OR_END
   , INVALID_ATTRIBUTE_COUNT
-}
+};
 ```
 
 We set a type of the `ConverterErrors` to be a `std::bitset` of number of bits equal to the number of available distinct error values:
@@ -132,7 +132,7 @@ else  // presumably huge I/O cost due to logging (think about distributed logger
 The stringification of `ConverterErrors` is implemented fairly easy, and &mdash; as  (note the indentation that helps the reader):
 
 ```c++
-const char* to_string(Error which)  // NOTE the result type
+std::string to_string(Error which)
 {
     switch (which)
     {
@@ -145,7 +145,7 @@ const char* to_string(Error which)  // NOTE the result type
     throw std::out_of_range{"Impossible path taken"};  // refactoring failed!
 }
 
-std::string to_string(ConverterErrors errors)
+std::string to_string(ConverterErrors errors)  // throws bad_alloc, out_of_range, length_error, 
 {
     std::string stringified;
 
@@ -156,7 +156,7 @@ std::string to_string(ConverterErrors errors)
         if (errors.test(index))
         {
             stringified +=   to_string(static_cast<Error>(index))
-                           + "(" + index + ") ";
+                           + "(" + std::to_string(index) + ") ";
         }
     }
 
@@ -167,7 +167,7 @@ std::string to_string(ConverterErrors errors)
 ## Live code
 
 
-Code available on [Coliru]().
+Code available on [Coliru](http://coliru.stacked-crooked.com/a/ac7daec151a84fa4).
 
 
 #### About this document
