@@ -3,7 +3,7 @@
 
 It is almost unbelievable how it is easy to commit a sin against simplicity. Consider a funcionality that converts some data type into an another one data type. All the information required to do a conversion is included in the original data type. How would you report errors if [`optional`-way were banned](https://github.com/insooth/insooth.github.io/blob/master/data-type-converters.md)?
 
-Following snippet comes from the production code base. We have a converter member function `getContinuousRanges` that filters the received vector of tuples, and converts the selected data into custom `InternalRange` values. All the data types consumed and produced by the converter model C++ aggregate (which is an equivalent to C `struct`s) of relatively small size in bytes. 
+Following snippet comes from the production code base. We have a converter member function `getContinuousRanges` that filters the received vector of tuples, and converts the selected data into custom `InternalRange` values. All the data types consumed and produced by the converter model C++ aggregates concept (which is an equivalent to C `struct`s) of relatively small size in bytes. 
 
 ```c++
 class Conversions
