@@ -86,7 +86,7 @@ enum class Error : std::uint8_t  // up to eight different types of errors
 };
 ```
 
-We set a type of the `ConverterErrors` to be a `std::bitset` of number of bits equal to the number of available distinct error values:
+We choose a type of the `ConverterErrors` to be a `std::bitset` of number of bits equal to the number of available distinct error values:
 
 ```c++
 using ConverterErrors =
