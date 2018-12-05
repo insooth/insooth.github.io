@@ -45,7 +45,7 @@ Following code snippet fixes the issues introduced with the original design. New
 * converters are stateless (and with easy-to-estimate performance),
 * errors are explicitly reported to the caller,
 * conceptually pure function is implemented as a pure one,
-* set of converters is easily extensible even from different header file (`namespace` models an "open class"),
+* set of converters is easily extensible even from a different header file (`namespace` models an "open class"),
 * naming matches the behaviour.
 
 ```c++
