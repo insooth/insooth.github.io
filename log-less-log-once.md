@@ -42,7 +42,7 @@ Even if all seems to be fine with the presented code snippet, it shall not pass 
 ## The fix
 
 Following code snippet fixes the issues introduced with the original design. New design brings significant benefits:
-* converters are stateless (and with a easy-to-estimate performance),
+* converters are stateless (and with easy-to-estimate performance),
 * errors are explicitly reported to the caller,
 * conceptually pure function is implemented as a pure one,
 * set of converters is easily extensible even from different header file (`namespace` models an "open class"),
