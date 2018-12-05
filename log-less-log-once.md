@@ -129,7 +129,7 @@ else  // presumably huge I/O cost due to logging (think about distributed logger
 }
 ```
 
-The stringification of `ConverterErrors` is implemented fairly easy, and &mdash; as  (note the indentation that helps the reader):
+The stringification of `ConverterErrors` is implemented fairly easy. (Note the indentation that helps the reader.):
 
 ```c++
 std::string to_string(Error which)
