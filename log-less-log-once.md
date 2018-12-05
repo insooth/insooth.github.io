@@ -167,7 +167,7 @@ std::string to_string(ConverterErrors errors)  // throws bad_alloc, out_of_range
 ## Live code
 
 
-Code available on [Coliru](http://coliru.stacked-crooked.com/a/ac7daec151a84fa4).
+Code available on [Coliru](http://coliru.stacked-crooked.com/a/ad3bb85aa2fee829).
 
 
 #### About this document
