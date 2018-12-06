@@ -36,6 +36,7 @@ Conversions::getContinuousRanges(const vector<tuple<Start, End, Attributes>>& ra
 Even if all seems to be fine with the presented code snippet, it shall not pass the code review. Following issues can be identified immediately:
 * unnecessary shared mutable state (`Logger`),
 * no feedback information to the caller if the conversion fails,
+* conversion functionality is not testable unless log messages are captured and parsed,
 * cannot use (conceptually) _pure_ converter without an object of type `Conversions`,
 * converter naming is misleading (we "filter and convert" rather than "get").
 
@@ -44,6 +45,7 @@ Even if all seems to be fine with the presented code snippet, it shall not pass 
 Following code snippet fixes the issues introduced with the original design. New design brings significant benefits:
 * converters are stateless (and with easy-to-estimate performance),
 * errors are explicitly reported to the caller,
+* straightforward testability,
 * conceptually pure function is implemented as a pure one,
 * set of converters is easily extensible even from a different header file (`namespace` models an "open class"),
 * naming matches the behaviour.
