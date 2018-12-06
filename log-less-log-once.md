@@ -115,19 +115,15 @@ ConverterErrors& operator|= (ConverterErrors& errors, Error which)  // throws ou
 Caller calls the conversion function, checks whether _none_ of errors was reported, and it either does its happy-path job, or reports the errors to the logger, then handles the erroneous case. Error logging is done once, and whether it is done actually or not it up to the caller. A converter does a conversion, solely, dot.
 
 ```c++
-auto rangeAndErrors = converters::toContinuousRanges(ranges);
-
-
-if (rangeAndErrors.second.none())  // success -- "zero" cost
+if (auto [d, e] = converters::toContinuousRanges(ranges); e.none())   // success -- "zero" cost
 {
-    // do your job
+    // do your job with "d"
 }
 else  // presumably huge I/O cost due to logging (think about distributed loggers)
 {
-  logger.error << "Conversion failed with: "
-               << to_string(rangeAndErrors.second);
+    logger.error << "Conversion failed with: " << converters::to_string(e);
 
-  // handle error
+    // handle error
 }
 ```
 
@@ -169,7 +165,7 @@ std::string to_string(ConverterErrors errors)  // throws bad_alloc, out_of_range
 ## Live code
 
 
-Code available on [Coliru](http://coliru.stacked-crooked.com/a/812fe1880576d7bf).
+Code available on [Coliru](http://coliru.stacked-crooked.com/a/eb91f695146c2fcb).
 
 
 #### About this document
