@@ -54,7 +54,7 @@ Following code snippet fixes the issues introduced with the original design. New
 namespace converters
 {
 
-pair<vector<InternalRange>, ConverterErrors>
+[[nodiscard]] pair<vector<InternalRange>, ConverterErrors>
 toContinuousRanges(const vector<tuple<Start, End, Attributes>>& ranges)
 {
     ConverterErrors errors;  // models value semantics
@@ -169,7 +169,7 @@ std::string to_string(ConverterErrors errors)  // throws bad_alloc, out_of_range
 ## Live code
 
 
-Code available on [Coliru](http://coliru.stacked-crooked.com/a/ad3bb85aa2fee829).
+Code available on [Coliru](http://coliru.stacked-crooked.com/a/812fe1880576d7bf).
 
 
 #### About this document
