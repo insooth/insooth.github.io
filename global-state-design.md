@@ -32,7 +32,7 @@ class Brick
 };
 ```
 
-A hidden scoped state is still a global state, even it is encapsulated. Bad practice remains Curcial dependencies are invisible to the reader. Member functions' names and signatures lie.
+A hidden scoped state is still a global state, even it is encapsulated. Bad practice remains. Curcial dependencies are invisible to the reader. Member functions' names and signatures lie.
 
 Possible solution include simply mentioning the dependencies in the member function signatures:
 
