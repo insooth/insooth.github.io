@@ -10,7 +10,7 @@ static struct Status status;
 
 struct Data* receive(const struct Source*);
 int alter(struct Data*);
-int transmit(struct Sink*, struct Data\*);
+int transmit(struct Sink*, struct Data*);
 ```
 
 The dependency between functions and `status` are invisible to the reader. Rough translation to C++ might look like:
