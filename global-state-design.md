@@ -34,7 +34,7 @@ class Brick
 
 A hidden scoped state is still a global state, even it is encapsulated. Bad practice remains. Curcial dependencies are invisible to the reader. Member functions' names and signatures lie.
 
-Possible solution include simply mentioning the dependencies in the member function signatures:
+Possible solution to the presented issue is to include simply mentioning the dependencies in the member function signatures:
 
 ```c++
 class Brick;
@@ -57,8 +57,7 @@ class Brick
 };
 ```
 
-And that's it. State is managed explicitly. `Brick` becomes stateless.
-
+And that's it. State is managed explicitly. `Brick` becomes stateless (or _less_ stateful). Data flow is explicit.
 
 #### About this document
 
