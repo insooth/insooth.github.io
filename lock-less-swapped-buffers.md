@@ -127,4 +127,4 @@ January 20, 2018 &mdash; Krzysztof Ostrowski
 
 #### Post scriptum
 
-Daniele Pallastrelli called the presented approach a a _flip model_. Full article is available here: https://accu.org/index.php/journals/2589 (from ACCU Overload Journal #148; December 2018).
+Daniele Pallastrelli called the presented approach a _flip model_. Full article is available here: https://accu.org/index.php/journals/2589 (from ACCU Overload Journal #148; December 2018).
