@@ -22,7 +22,7 @@ class Brick
 
  public:
 
-  Data receive(const Source&)
+  Data receive(const Source&);
   bool alter(Data&&);
   bool transmit(Sink&, Data&&);
 
