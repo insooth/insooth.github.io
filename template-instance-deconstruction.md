@@ -1,14 +1,14 @@
 # How to deconstruct a template instance
 
-I was asked recently the question about the template instance's parameters inspection possibilities in order to be able to stringify the types and integral constants used to create that instance.
+I was asked recently a question about the template instance's parameters inspection possibilities in order to be able to stringify the types and integral constants used to create that instance.
 
-Namely, having a template with _N_ parameters, and an instance (an object or just a type) of that template we would like to print the parameters with which that instance was created.
+Namely, having a template with _N_ parameters, and an instance (an object or just a type) of that template we would like to print the text representation of the parameters with which that instance was created. This article presents an example solution to that problem.
 
 ## Deconstruct through pattern matching
 
-The task is to match against the type constructor (here: a template) of a particular instance of a template, and to extract the parameters that were used to create that instance (in other words: to _deconstruct_ the instance). Having the parameters extracted we want to apply them to a user-specified action. Since no modifications of the parameters are allowed (all are constant), we may either transform those constants into the other constants, or apply a type constructor to them.
+The task is to match against the type constructor (here: a template) used to create a particular instance (of that template), and to extract the parameters that were used to create that instance (in other words: to _deconstruct_ the instance). Having the parameters extracted we want to apply them to a user-specified action. Since no modifications of the parameters are allowed (all the parameters are _immutable_, either a type or a constant), we may either transform those parameters into the other parameters, or apply a type constructor to them. Note that we do know nothing about the extracted parameters, thus we cannot assume the presence of certain properties.
 
-Template-based pattern matching will be used to deconstruct an instance of a given (known) template. Extracted parameters will be stored in a heterogeneous container, a `std::tuple`. A non-intrusive approach to deconstruction will be presented (i.e. without modifications to the existing data types, and with no use of nested types likes `value_type` or `result_type`). An example for a single-parameter template follows:
+Template-based pattern matching will be used to deconstruct an instance of a given (known) template. The extracted parameters will be stored in a heterogeneous container, a `std::tuple`. A non-intrusive approach to deconstruction will be presented (i.e. without modifications to the existing data types, and with no use of the nested types like `value_type` or `result_type`). An example for a single-parameter template follows:
 
 ```c++
 template<template<class> class S, class T>
@@ -41,24 +41,25 @@ using deconstruct_t = typename deconstruct<S, Ts...>::type;
 
 ## Intercept the instance's parameters
 
-Using the deconstruction utility we can emulate one of the features that can be implemented by means of reflexion. Having an instance of a template, we will print the parameters used to make that instance, i.e.: passing `std::vector<int>` to the designed utility we will get a string of `int std::allocator<int>`.
+Using the deconstruction utility we can emulate one of the features that can be implemented by means of the reflexion. Having an instance of a template, we will print the parameters used to build that instance, e.g.: passing a `std::vector<int>` to the designed utility will produce a string of `int std::allocator<int>`.
 
-Without the reflexion feature compiler is not likely to provide us with stringified names of the types, thus providing an appropriate mapping form types to their stringified names is up to us.
+Without the reflexion feature compiler is not likely to provide us with the stringified names of the types, thus providing an appropriate mapping form types to their stringified names is up to us.
 
-Constant expression that returns the name (here: `...`) of a type is an action of a form:
+A constant expression that returns the name (here: `...`) of a type is an "action" of a form:
 
 ```c++
 constexpr const char* name() { return "..."; }
 // a lambda expression in general:    [] { return "..."; }
 ```
 
-We would like to call such actions once given a type we support. Since type names are guaranteed by C++ to be unique, we can use `tuple` to store the _box_ objects that wrap the action while they can be indexed by the supported instance's parameters.
+We would like to call such actions once we are given a type we support. Since type names are guaranteed by C++ to be unique, we can use `tuple` to store the _box_ objects that wrap the actions and are indexable by the supported instance's parameters.
 
 ```c++
 template<class F, class... Ts> /* requires RegularInvocable<F> */ struct box { F name; }; 
 // example:    box<std::add_pointer_t<decltype(name)>, int, std::allocator<int>> b{name};
 
-// NOTE: F is fixed for all the boxes in the collection bound to the specific type constructor, thus having
+// NOTE: F is fixed for all the boxes in the collection bound to the specific type constructor,
+// thus having
 //    tuple<box<F, int>, box<F, double>> names
 //         = {{[] { return "int"; }, {[] { return "double"; }}}
 // we are able to search for types Ts easily:
@@ -81,7 +82,7 @@ using boxify_t = typename boxify<F, Ts...>::type;
 
 ## Stringify 
 
-We know how to intercept the instance's parameters with `deconstruct_t`, and we are able to keep the intercepted data in a searchable heterogeneous collection of `box` objects. Let's abstract out the mentioned collection into a stringification context that will be injected into a stringifier abstraction (will be defined at later point later).
+We know how to intercept the instance's parameters with `deconstruct_t`, and we are able to keep the intercepted data in a searchable heterogeneous collection of `box` objects. Let's abstract out the mentioned collection into a stringification context that will be injected into a stringifier abstraction (will be defined soon).
 
 ```c++
 template<template<class...> class S>
