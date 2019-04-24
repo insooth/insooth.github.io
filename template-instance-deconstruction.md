@@ -104,7 +104,7 @@ struct stringify_context<std::optional>
 };
 ```
 
-There exists multiple stringification contexts, one per type constructor. The stringification engine uses the context to get the actual string representation of the parameters
+There exists multiple stringification contexts, one per type constructor. The stringification engine uses the context to get the actual string representation of the parameters.
 
 ```c++
 template<template<class...> class S, class C = stringify_context<S>>
@@ -125,6 +125,8 @@ struct stringify
 // optional<int> o
 // stringify<optional>{}(o)    yields Maybe[Int]
 ```
+
+Future work may include an extension the presented solution that enables (recursive) traversal of the nested type instances.
 
 ## Live code
 
