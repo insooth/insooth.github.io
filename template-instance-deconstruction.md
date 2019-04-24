@@ -61,7 +61,7 @@ template<class F, class... Ts> /* requires RegularInvocable<F> */ struct box { F
 // NOTE: F is fixed for all the boxes in the collection bound to the specific type constructor,
 // thus having
 //    tuple<box<F, int>, box<F, double>> names
-//         = {{[] { return "int"; }, {[] { return "double"; }}}
+//         = { {[] { return "int"; }, {[] { return "double"; }} }
 // we are able to search for types Ts easily:
 //    std::get<box<F, Ts>>(names).name();
 ```
