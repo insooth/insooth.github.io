@@ -1,7 +1,7 @@
 
 # Delaying things
 
-Think about functions as they were structured data. Use a structure to delay function application, output and input.
+Think about functions as they were structured data. Use a structure to delay function application, its output and input.
 
 ## η (eta)
 
