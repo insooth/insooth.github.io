@@ -34,7 +34,18 @@ auto gg = [](auto&&... as) { return g(forward<decltype(as)>(as)...); };
 
 ## More with λ (lambda)
 
+| Delay output | Delay application | Delay input |
+|---|---|---|
+| Return an action (like lambda): `F foo() requires Invocable<F, ...>`. Generate data. | `auto bar() { return [](auto) { return foo(); }; }`. Add laziness to a strict language. | Take an action: `T foo(F) requires Invocable<F, ...>`. Consume a stream. |
+
++ Omega combinator.
++ Y combinator (untyped lambda calculus)
++ delay Y combinator in a strict language
++ delay application with Z combinator
+
 ## Towards Free
+
+Interpret description of a program, carry state between the interpreted structures.
 
 #### About this document
 
