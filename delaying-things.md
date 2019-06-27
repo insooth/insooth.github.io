@@ -47,6 +47,8 @@ auto gg = [](auto&&... as) { return g(forward<decltype(as)>(as)...); };
 
 Interpret description of a program, carry state between the interpreted structures.
 
+Free is a Monad; it wraps another structure and makes it possible to treated as a Monad (nested data structure is interpreted, hidden state with current result of the computation is carried by Free between the next interpretation steps of the nested structure); like recursion through Y combinator: the function passed to Y is not recursive itself.
+
 #### About this document
 
 May 28, 2019 &mdash; Krzysztof Ostrowski
