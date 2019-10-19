@@ -122,7 +122,7 @@ struct find_in_if_impl<std::index_sequence<Is...>, _>
 };
 ```
 
-Result type `box` is flexible enough to carry over additional information if requested. Moreover, `find_in_if` is general enough to accept any type that acts as a `Predicate`, and any type that understands [`tuple_element`](https://en.cppreference.com/w/cpp/utility/tuple/tuple_element) and [`tuple_size`](https://en.cppreference.com/w/cpp/utility/tuple/tuple_size) metafunctions in place of a `Tuple`.
+Result type `box` is flexible enough to carry over additional information if requested. Moreover, `find_in_if` is general enough to accept any class template that acts as a `Predicate` (i.e. exposes `value` member convertible to `bool`), and any type that understands [`tuple_element`](https://en.cppreference.com/w/cpp/utility/tuple/tuple_element) and [`tuple_size`](https://en.cppreference.com/w/cpp/utility/tuple/tuple_size) metafunctions in place of a `Tuple`.
 
 ## Full example
 
