@@ -1,15 +1,15 @@
 
 # Access tuple-like container by type to return an index
 
-A colleague of mine asked a very interesting question that led to some code and this article. Here is the question:
+A colleague of mine asked me a very interesting question that led to some code and this article. Here is the question:
 
-> How would you look for an item in the tuple by its type, and return its index within that tuple?
+> How would you look for an item in a tuple by the item's type, and return the item's index within that tuple?
 
-It is easy to realise we are going to deal with an iteration of a tuple. Such an iteration task can be done in a recursive way (as presented [here with `is_within`](https://github.com/insooth/insooth.github.io/blob/master/visitor-pattern.md)), or by means of variadic templates. The latter technique seems to be a better idea due to absence of an explicit recursion.
+It is easy to realise that we are going to deal with an iteration of a tuple. Such an iteration task can be done in a recursive way (as presented [here with `is_within`](https://github.com/insooth/insooth.github.io/blob/master/visitor-pattern.md)), or by means of variadic templates. The latter technique seems to be a better idea due to absence of an explicit recursion.
 
-It turns out that the toughest task is to be able to convey an additional information just between the iteration steps: the current index of the element that is being processed. This article presents an approach to that task that is using lazy fold expression implemented as [`std::disjunction`](https://en.cppreference.com/w/cpp/types/disjunction), and an idea of type embellishment that let us introduce an implicit context in which current element is embedded.
+It turns out that the toughest task is to be able to convey an additional information just between the iteration steps: the current index of the element that is being processed. This article presents an approach to that task that is using lazy fold expression implemented as [`std::disjunction`](https://en.cppreference.com/w/cpp/types/disjunction), and an idea of type embellishment that lets us introduce an implicit context in which current element is embedded.
 
-## Iteration over elements
+## Iteration
 
 Let's recall `is_within` from [_The role of the visitor pattern_](https://github.com/insooth/insooth.github.io/blob/master/visitor-pattern.md), a metafunction that returns `true` if type `T` is found inside the tuple `U`. Here we use variadic templates to pattern match over the types `Us...` contained in the tuple `U`, and the progress is guaranteed by means of inheritance (explicit recursion), stop condition is trivial.
 
@@ -89,7 +89,7 @@ class find_in_if
 
 Note that, `std::disjunction` can only be applied to types usable as base classes (recursion is done through inheritance), and to those that expose `value` member convertible to `bool`. Metafunctions from `<type_traits>` header, e.g. partially applied `std::is_same`, are good candidates for parameters to `std::disjunction`.
 
-## Adding type embellishment
+## Embellishment
 
 Current version of `find_in_if` acts as a predicate solely, we receive yes-no answer from it. To be able to retain some information (like indices) and return it to the user with the search result, every type from the input `Tuple` will be embedded into `box` type that meets requirements put by `std::disjunction` (see previous paragraph).
 
