@@ -5,7 +5,7 @@ A colleague of mine asked me a very interesting question that led to some code a
 
 > How would you look for an item in a tuple by the item's type, and return the item's index within that tuple?
 
-It is easy to realise that we are going to deal with the tuple iteration. Such an iteration task can be done in a recursive way (as presented [here with `is_within`](https://github.com/insooth/insooth.github.io/blob/master/visitor-pattern.md)), or by means of variadic templates. The latter technique seems to be a better idea due to absence of an explicit recursion.
+It is easy to realise that we are going to deal with a tuple iteration. Such an iteration task can be done in a recursive way (as presented [here with `is_within`](https://github.com/insooth/insooth.github.io/blob/master/visitor-pattern.md)), or by means of variadic templates. The latter technique seems to be a better idea due to absence of an explicit recursion.
 
 It turns out that the toughest task in our case is to be able to convey an additional information just between the iteration steps: the current index of the element that is being processed. This article presents an approach to that task that is using lazy fold expression implemented as [`std::disjunction`](https://en.cppreference.com/w/cpp/types/disjunction), and an idea of type embellishment that lets us introduce an implicit context in which current element is embedded.
 
