@@ -233,6 +233,18 @@ class matcher
 };
 ```
 
+Use in `unbox`:
+
+```c++
+template<class Tag, class Fs>
+constexpr auto unbox(Fs&& fs)
+{
+    using items = std::remove_reference_t<Fs>;
+    using found = find_in_if_t<items, matcher<Tag>::template apply>;
+// ...
+}
+```
+
 ## Potential issue
 
 Relation between tag and a member function under test is not checked. That is, convenience ensures that `Foo` identifies `foo` member function, nothing more. There is no explicit compile-time rule that prevents from assignment of `bar` to `Foo` tag.
@@ -266,7 +278,7 @@ constexpr auto is_delegate_v = is_delegate<Tag, F>::value;
 A concrete example follows.
 
 ```c++
-struct Bar : std::common_type<int (Testable::*)(int)> {};
+struct Bar : std::common_type<int (Testable<...>::*)(int)> {};
 //                ^^~~ used as an identity_type
 
 auto bar = [](int) -> int { return 0; };
@@ -291,6 +303,9 @@ struct M
 };
 ```
 
+
+
+Live code is available on [Coliru]().
 
 #### About this document
 
