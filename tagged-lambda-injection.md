@@ -51,37 +51,55 @@ Relation between tag and a member function under test is not checked. That is, c
 We need to associate tag with a particular member function signature, and verify that during mock construction.
 
 ```c++
+template<class T, class U>
+struct is_equiv : std::false_type {};
+
+template<class R, class C1, class C2, class... As>
+struct is_equiv<R (C1::*)(As...), R (C2::*)(As...)> : std::true_type {};
+
 template<class T>
 struct drop_const : std::common_type<T> {};
 
 template<class R, class C, class... As>
 struct drop_const<R (C::*)(As...) const> : std::common_type<R (C::*)(As...)> {};
 
-
-template<class T, class U>
-struct is_delegate : std::false_type {};
-
-template<class R, class C1, class C2, class... As>
-struct is_delegate<R (C1::*)(As...), R (C2::*)(As...)> : std::true_type {};
+template<class Tag, class F>
+using is_delegate = 
+    is_equiv<typename Tag::type
+           , typename drop_const<decltype(&F::operator())>::type
+//                    ^~~ to accept mutable and non-mutable lambdas
+           >;
 
 template<class Tag, class F>
-constexpr auto is_delegate_v =
-    is_delegate<typename Tag::type
-              , typename drop_const<decltype(&F::operator())>::type
-//                       ^~~ to accept mutable and non-mutable lambdas
-              >::value;
+constexpr auto is_delegate_v = is_delegate<Tag, F>::value;
+```
 
+A concrete example follows.
 
-
-
-
+```c++
 struct Bar : std::common_type<int (Testable::*)(int)> {};
 //                ^^~~ used as an identity_type
 
 auto bar = [](int) -> int { return 0; };
 
 static_assert(is_delegate_v<Bar, decltype(bar)>);  // OK
+```
 
+Actual check shall be done inside the mock's constructor with a static assert.
+
+
+```c++
+template<class... Fs>
+struct M
+{
+    M(Fs... fs) : fs{fs...}
+    {
+        static_assert(std::conjunction_v<
+            is_delegate<typename Fs::tag_type, typename Fs::type>...
+            >);
+    }
+// ...
+};
 ```
 
 
