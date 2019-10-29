@@ -53,6 +53,10 @@ M m
   , [](int) -> int { return 0; }
 // ...more to come
 };
+
+// Testable<decltype(m)> t{m};
+// t.foo();     // shall invoke user-defined actions
+// t.bar(123);
 ```
 
 The general question arises here: how to uniquely associate a particular lambda expression of type `Fs` with the `Testable` interface member functions during construction of a mock `M`?
@@ -133,6 +137,63 @@ That will not work, [CppReference quotes the ISO C++ standard](https://en.cppref
 > Class template argument deduction is only performed if no template argument list is present. If a template argument list is specified, deduction does not take place.
 
 ## How to partially apply a class template
+
+Having tagged lambda expression we can easily link given action to a member function from `Testable`, currently only using an informal agreement.
+
+```c++
+// tags
+struct Foo;
+struct Bar;
+
+M m
+{
+    boxify<Foo>([] { std::cout << "foo" << std::endl; })  // to be called by Testable::foo
+  , boxify<Bar>([](auto i) -> int { std::cout << "bar " << i << std::endl; return 0; })  // Testable::bar
+};
+
+Testable<decltype(m)> t{m};
+```
+
+Inside the `M` we have to look for a lambda expression having its tag (which is a well-known global type).
+
+```c++
+template<class... Fs>
+struct M
+{
+    M(Fs... fs) : fs{fs...} {}
+    
+    //! @see Testable interface
+    void foo() { unbox<Foo>(fs)(); }
+    int bar(int i) { return unbox<Bar>(fs)(i); }
+//                          ^^ fetch      ^^ apply
+    
+    std::tuple<Fs...> fs;
+};
+```
+
+Where `unbox` takes a tag and fetches the stored in `fs` lambda expression which is applied later on. We will use generic tuple find defined as [`find_in_if`](https://github.com/insooth/insooth.github.io/blob/master/tuple-find.md). Definition of a `PREDICATE` constitutes a challenge.
+
+```c++
+// Get F from box<Tag, F> stored in Fs tuple.
+template<class Tag, class Fs>
+constexpr auto unbox(Fs&& fs)
+{
+    using items = std::remove_reference_t<Fs>;
+    using found = find_in_if_t<items, PREDICATE>;
+//                                    ^^^^^^^^^
+
+    if constexpr (found::index < std::tuple_size_v<items>)
+    {
+        return std::get<found::index>(std::forward<Fs>(fs));
+    }
+    else
+    {
+        return [](auto&&...) -> typename found::type {};  // not_found -- compilation error
+    }
+}
+```
+
+
 
 Carry an additional information within the type
 Nested class template to the rescue
