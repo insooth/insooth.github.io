@@ -171,7 +171,9 @@ struct M
 };
 ```
 
-Where `unbox` takes a tag and fetches the stored in `fs` lambda expression which is applied later on. We will use generic tuple find defined as [`find_in_if`](https://github.com/insooth/insooth.github.io/blob/master/tuple-find.md). Definition of a `PREDICATE` constitutes a challenge.
+Where `unbox` takes a tag and fetches the stored in `fs` lambda expression which is applied later on. Note: `unbox` does not perform the lambda expression application itself &ndash; that way we don't need to handle `void` result type cases.
+
+We will use generic tuple find defined as [`find_in_if`](https://github.com/insooth/insooth.github.io/blob/master/tuple-find.md). Definition of a `PREDICATE` constitutes a challenge.
 
 ```c++
 // Get F from box<Tag, F> stored in Fs tuple.
@@ -192,13 +194,44 @@ constexpr auto unbox(Fs&& fs)
     }
 }
 ```
+`PREDICATE` will be applied to every `box`, and it has to [deconstruct `box` template instance](https://github.com/insooth/insooth.github.io/blob/master/template-instance-deconstruction.md) in order to extract `Tag` of the currently iterated `box`. If the found `Tag` matches the needle, `find_in_if` returns with success.
+
+```c++
+template<class T, class B>
+struct tag_matcher;
+
+template<class T, class U, class F>
+struct tag_matcher<T, box<U, F>> : std::false_type {};
+
+template<class T, class F>
+struct tag_matcher<T, box<T, F>> : std::true_type {};
 
 
+// example for some F:
+// static_assert(tag_matcher<Foo, box<Foo, F>>::value);  // OK
+```
 
-Carry an additional information within the type
-Nested class template to the rescue
-https://en.cppreference.com/w/cpp/language/type_alias
-Alias template supports only one level of nesting: size of a stack of parametrised types introduces by alias template is equal to one
+From the `unbox` perspective the needle, `Tag`, has to be stored in the `tag_matcher` in the parameter `T` before passing the matcher to `find_in_if`. In order to make that (i.e. partial application of a type constructor, where type constructor is a classs template) we will wrap tag matcher in the `matcher` abstraction that consumes `Tag`, and exposes `apply` alias template that performs the rest of the application.
+
+```c++
+template<class Tag>
+class matcher
+{
+    template<class T, class B>
+    struct tag_matcher;
+    
+    template<class T, class U, class F>
+    struct tag_matcher<T, box<U, F>> : std::false_type {};
+    
+    template<class T, class F>
+    struct tag_matcher<T, box<T, F>> : std::true_type {};
+
+ public:
+
+    template<class Box>
+    using apply = tag_matcher<Tag, Box>;
+};
+```
 
 ## Potential issue
 
