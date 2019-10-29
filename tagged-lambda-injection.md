@@ -148,7 +148,7 @@ struct Bar;
 M m
 {
     boxify<Foo>([] { std::cout << "foo" << std::endl; })  // to be called by Testable::foo
-  , boxify<Bar>([](auto i) -> int { std::cout << "bar " << i << std::endl; return 0; })  // Testable::bar
+  , boxify<Bar>([](int i) -> int { std::cout << "bar " << i << std::endl; return 0; })  // Testable::bar
 };
 
 Testable<decltype(m)> t{m};
@@ -255,8 +255,8 @@ We need to associate tag with a particular member function signature, and verify
 template<class T, class U>
 struct is_equiv : std::false_type {};
 
-template<class R, class C1, class C2, class... As>
-struct is_equiv<R (C1::*)(As...), R (C2::*)(As...)> : std::true_type {};
+template<class R, class T, template<class> class C1, class C2, class... As>
+struct is_equiv<R (C1<T>::*)(As...), R (C2::*)(As...)> : std::true_type {};
 
 template<class T>
 struct drop_const : std::common_type<T> {};
@@ -278,7 +278,8 @@ constexpr auto is_delegate_v = is_delegate<Tag, F>::value;
 A concrete example follows.
 
 ```c++
-struct Bar : std::common_type<int (Testable<...>::*)(int)> {};
+//                                          v~~ don't care, but must be complete
+struct Bar : std::common_type<int (Testable<long>::*)(int)> {};
 //                ^^~~ used as an identity_type
 
 auto bar = [](int) -> int { return 0; };
@@ -303,9 +304,9 @@ struct M
 };
 ```
 
+## Full example
 
-
-Live code is available on [Coliru]().
+Live code is available on [Coliru](http://coliru.stacked-crooked.com/a/17ced5bf52d54924).
 
 #### About this document
 
