@@ -90,7 +90,7 @@ We will produce a tagged lambda by means of a phantom type, and inheritance to t
 template<class Tag, class F>
 struct box : F
 {
-    using F::operator();  // 
+    using F::operator();  // intercept F's behaviour
 
     // keep type info for 
     using type     = F;
@@ -101,7 +101,8 @@ struct box : F
 Example usage:
 
 ```
-box<struct Foo, ???> x{ []{ /* noop */ } };  // impossible to know the type of a lambda
+box<struct Foo, ???> x{ []{ /* noop */ } };
+//              ^~~ impossible to know here the type of a lambda
 
 auto f = []{ /* noop */ };
 box<struct Boilerplate, decltype(f)> y{std::move(f)};
