@@ -116,8 +116,8 @@ constexpr auto unbox(Fs&& fs)
 template<class T, class U>
 struct is_equiv : std::false_type {};
 
-template<class R, class T, template<class> class C1, class C2, class... As>
-struct is_equiv<R (C1<T>::*)(As...), R (C2::*)(As...)> : std::true_type {};
+template<class R, template<class> class C1, class C2, class... Ts, class... As>
+struct is_equiv<R (C1<Ts...>::*)(As...), R (C2::*)(As...)> : std::true_type {};
 
 template<class T>
 struct drop_const : std::common_type<T> {};
@@ -165,7 +165,7 @@ struct M
     {
         static_assert(std::conjunction_v<
             is_delegate<typename Fs::tag_type, typename Fs::type>...
-            >);
+            >, "Tag sig must match sig of mocked mem fn");
     }
     
     // iface
@@ -196,7 +196,7 @@ int main()
 
 
 /*
-http://coliru.stacked-crooked.com/a/17ced5bf52d54924
+http://coliru.stacked-crooked.com/a/2b447ef37bb18b29
 
 g++ -std=c++17 -O2 -Wall -pedantic -pthread main.cpp && ./a.out
 foo
