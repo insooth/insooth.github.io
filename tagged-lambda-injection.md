@@ -5,7 +5,7 @@ This article is a follow-up to the article [_Creating testable interfaces_](http
 
 ## Recap
 
-By making the class under test a class template parameterised by an "injected type" (cf. [article on customisation points](https://github.com/insooth/insooth.github.io/blob/master/customisation-points-support-interfaces.md)) we delegate member functions, and remaining class internals if required, to some type `T` that promises to provide the behaviour we expect (a `concept` as of C++20). In the GMock-world this technique is called "hi-perf dependency injection" (complementary techniques [are described in a dedicated article](https://github.com/insooth/insooth.github.io/blob/master/testable-design.md)).
+By making the class under test a class template parameterised by an "injected type" (cf. [article on customisation points](https://github.com/insooth/insooth.github.io/blob/master/customisation-points-support-interfaces.md)) we delegate member functions, and remaining class internals if required, to some type `T` that promises to provide the behaviour we expect (possibly expresses in a form of a `concept` as of C++20). In the GMock-world this technique is called "hi-perf dependency injection" (complementary techniques [are described in a dedicated article](https://github.com/insooth/insooth.github.io/blob/master/testable-design.md)).
 
 ```c++
 template<class Injected>
@@ -59,7 +59,7 @@ M m
 // t.bar(123);
 ```
 
-The general question arises here: how to uniquely associate a particular lambda expression of type `Fs` with the `Testable` interface member functions during construction of a mock `M`?
+The general question arises here: how to uniquely associate a particular lambda expression of type `Fs` with the `Testable` interface member function during construction of a mock `M`?
 
 ## Making phantom types
 
@@ -67,7 +67,7 @@ The general question arises here: how to uniquely associate a particular lambda 
 
 > A phantom type is a parametrised type whose parameters do not all appear on the right-hand side of its definition
 
-Which translates to a C++ class template in which not all of the passed parameters are relised in the memory (i.e. they exist only during compilation time). Phantom type is a type with a tag available only during compile-time attached. 
+Which translates to a C++ class template in which not all of the passed parameters are realised in the memory (i.e. they exist only during compilation time). Phantom type is a type equipped with a tag only available during compile-time. 
 
 ```c++
 template<class Tag, class U> struct box { U u; };
@@ -83,7 +83,7 @@ assert(0 == std::memcmp(&x, &y, sizeof y));  // same data
 static_assert( ! std::is_same_v<decltype(x), decltype(y)>); // different types
 ```
 
-We will produce a tagged lambda by means of a phantom type, and inheritance to take over the behaviour of a passed lambda `F`. [Aggregate initialisation](https://en.cppreference.com/w/cpp/language/aggregate_initialization) of a public base class will be used. 
+We will produce a tagged lambda by means of a phantom type, and inheritance to take over the behaviour of the passed lambda `F`. [Aggregate initialisation](https://en.cppreference.com/w/cpp/language/aggregate_initialization) of a public base class will be used. 
 
 
 ```c++
@@ -107,7 +107,7 @@ auto f = []{ /* noop */ };
 box<struct Boilerplate, decltype(f)> y{std::move(f)};
 ```
 
-Since we know the tag, and the type of the passed lambda is not known until we define it, a helper function will be helpful.
+Since we know the tag, and the type of the passed lambda is not known until we define it, a helper function will be useful.
 
 ```c++
 template<class Tag, class F>
@@ -132,13 +132,13 @@ box(F) -> box<Tag, F>;
 box<Tag> wrong{[]{}};
 ```
 
-That will not work, [CppReference quotes the ISO C++ standard](https://en.cppreference.com/w/cpp/language/class_template_argument_deduction):
+That will not work, [cppreference.com quotes the ISO C++ standard](https://en.cppreference.com/w/cpp/language/class_template_argument_deduction):
 
 > Class template argument deduction is only performed if no template argument list is present. If a template argument list is specified, deduction does not take place.
 
 ## How to partially apply a class template
 
-Having tagged lambda expression we can easily link given action to a member function from `Testable`, currently only using an informal agreement.
+Having a tagged lambda expression we can easily link given action to a member function directly from `Testable`. Currently, only using an informal agreement.
 
 ```c++
 // tags
@@ -171,9 +171,9 @@ struct M
 };
 ```
 
-Where `unbox` takes a tag and fetches the stored in `fs` lambda expression which is applied later on. Note: `unbox` does not perform the lambda expression application itself &ndash; that way we don't need to handle `void` result type cases.
+Where `unbox` takes a tag, and fetches the stored in `fs` lambda expression, to apply it in the next steps. Note: `unbox` does not perform the lambda expression application itself &ndash; this way we don't need to handle the case with the `void` result type.
 
-We will use generic tuple find defined as [`find_in_if`](https://github.com/insooth/insooth.github.io/blob/master/tuple-find.md). Definition of a `PREDICATE` constitutes a challenge.
+We will use generic tuple find defined by [`find_in_if`](https://github.com/insooth/insooth.github.io/blob/master/tuple-find.md). Definition of the `PREDICATE` constitutes a challenge.
 
 ```c++
 // Get F from box<Tag, F> stored in Fs tuple.
@@ -194,7 +194,7 @@ constexpr auto unbox(Fs&& fs)
     }
 }
 ```
-`PREDICATE` will be applied to every `box`, and it has to [deconstruct `box` template instance](https://github.com/insooth/insooth.github.io/blob/master/template-instance-deconstruction.md) in order to extract `Tag` of the currently iterated `box`. If the found `Tag` matches the needle, `find_in_if` returns with success.
+`PREDICATE` will be applied to every `box`, it [deconstructs `box` template instance](https://github.com/insooth/insooth.github.io/blob/master/template-instance-deconstruction.md) in order to extract `Tag` embedded in the currently iterated item. If the found `Tag` matches the needle, `find_in_if` returns with success.
 
 ```c++
 template<class T, class B>
@@ -211,7 +211,7 @@ struct tag_matcher<T, box<T, F>> : std::true_type {};
 // static_assert(tag_matcher<Foo, box<Foo, F>>::value);  // OK
 ```
 
-From the `unbox` perspective the needle, `Tag`, has to be stored in the `tag_matcher` in the parameter `T` before passing the matcher to `find_in_if`. In order to make that (i.e. partial application of a type constructor, where type constructor is a classs template) we will wrap tag matcher in the `matcher` abstraction that consumes `Tag`, and exposes `apply` alias template that performs the rest of the application.
+From the `unbox` perspective the needle, `Tag`, has to be stored in the `tag_matcher` as the parameter `T` before passing the matcher to `find_in_if`. In order to make that (i.e. to do a partial application of a type constructor, where type constructor is a class template) we will wrap `tag_matcher` in the `matcher` abstraction that consumes `Tag`, and exposes `apply` alias template that performs the rest of the application.
 
 ```c++
 template<class Tag>
@@ -247,16 +247,16 @@ constexpr auto unbox(Fs&& fs)
 
 ## Potential issue
 
-Relation between tag and a member function under test is not checked. That is, convenience ensures that `Foo` identifies `foo` member function, nothing more. There is no explicit compile-time rule that prevents from assignment of `bar` to `Foo` tag.
+Relation between a tag and a member function under test is not checked formally. That is, convenience ensures that `Foo` identifies `foo` member function, nothing more. There is no explicit compile-time rule that prevents from assignment of `bar` to `Foo` tag.
 
-We need to associate tag with a particular member function signature, and verify that during mock construction.
+We need to associate tag with a particular member function signature, and verify that during mock construction. That will be done by `is_delegate` trait.
 
 ```c++
 template<class T, class U>
 struct is_equiv : std::false_type {};
 
-template<class R, class T, template<class> class C1, class C2, class... As>
-struct is_equiv<R (C1<T>::*)(As...), R (C2::*)(As...)> : std::true_type {};
+template<class R, template<class> class C1, class C2, class... Ts, class... As>
+struct is_equiv<R (C1<Ts...>::*)(As...), R (C2::*)(As...)> : std::true_type {};
 
 template<class T>
 struct drop_const : std::common_type<T> {};
@@ -298,7 +298,7 @@ struct M
     {
         static_assert(std::conjunction_v<
             is_delegate<typename Fs::tag_type, typename Fs::type>...
-            >);
+            >, "Tag sig must match sig of mocked mem fn");
     }
 // ...
 };
@@ -306,7 +306,7 @@ struct M
 
 ## Full example
 
-Live code is available on [Coliru](http://coliru.stacked-crooked.com/a/17ced5bf52d54924).
+Live code is available on [Coliru](http://coliru.stacked-crooked.com/a/2b447ef37bb18b29).
 
 #### About this document
 
