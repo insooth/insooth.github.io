@@ -53,12 +53,11 @@ To be able to use disjunction over predicate-applied types we have to generate a
 template<class Tuple, template<class> class Predicate>
 class find_in_if
 {
-    template<class, class = void>
-//                  ^~~ nested class templates may not be fully specialised
+    template<class>
     struct find_in_if_impl;
     
-    template<std::size_t... Is, class _>
-    struct find_in_if_impl<std::index_sequence<Is...>, _>
+    template<std::size_t... Is>
+    struct find_in_if_impl<std::index_sequence<Is...>>
 //                         ^~~ extract indices
     {
         // does short-circuit:
@@ -110,8 +109,8 @@ struct box
 A contrived unique `box` type will be used as a fallback type, a type returned if disjunction was about to produce a `false` value.
 
 ```c++
-template<std::size_t... Is, class _>
-struct find_in_if_impl<std::index_sequence<Is...>, _>
+template<std::size_t... Is>
+struct find_in_if_impl<std::index_sequence<Is...>>
 {
     using type =
         std::disjunction<
@@ -142,11 +141,11 @@ class find_in_if
         static constexpr bool        value = P<T>::value;  // disjunction uses this
     };
   
-    template<class, class = void>
+    template<class>
     struct find_in_if_impl;
     
-    template<std::size_t... Is, class _>
-    struct find_in_if_impl<std::index_sequence<Is...>, _>
+    template<std::size_t... Is>
+    struct find_in_if_impl<std::index_sequence<Is...>>
     {
         using type =
             std::disjunction<
