@@ -248,7 +248,7 @@ constexpr auto unbox(Fs&& fs)
 
 ## Potential issue
 
-Relation between a tag and a member function under test is not checked formally. That is, convenience ensures that `Foo` identifies `foo` member function, nothing more. There is no explicit compile-time rule that prevents from assignment of `bar` to `Foo` tag.
+Relation between a tag and a member function under test is not being checked formally. That is, convenience ensures that `Foo` identifies `foo` member function, nothing more. There is no explicit compile-time rule that prevents from assignment of `bar` to `Foo` tag.
 
 We need to associate tag with a particular member function signature, and verify that during mock construction. That will be done by `is_delegate` trait.
 
