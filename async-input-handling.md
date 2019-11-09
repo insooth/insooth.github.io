@@ -73,10 +73,66 @@ The re-route of the `m` is forced by `Module::newMsg` due to testability reasons
 
 ## Challenge the status quo
 
+From the functional point of view, we can insert a broker between `Input` and `Module` components that will solve lifetimes' issues. Imagine an additional component `Broker` that is composed of a message queue, where `Input` just writes to it, and `Modules` just reads from it. That's a single producer, single consumer design ([example solution](https://github.com/insooth/insooth.github.io/blob/master/lock-less-swapped-buffers.md)).
+
+## Middleman
+
+`Broker` introduces a shared resource, not necessarily synchronised if the _read_ and _write_ threads are separated by design well enough. If the write thread pushes new messages to a circular buffer of a fixed size (i.e. we can refer to each element in the buffer by its index), effectively modifying it without a lock; and the read thread inspects that buffer, either as a reaction to an event or periodically, in order to make a copy of new messages to its thread of execution; then we can bring an additional information in a form of a (conceptual) sequence of indices into `Broker`. Only the read thread modifies the sequence of indices, while the write thread uses the information stored there to reuse elements in the circular buffer. Reuse shall happen for all the pointed indices (all or nothing strategy). Completion is indicated by setting an atomic flag. That flag is a lock-free synchronisation point between read and write threads.
+
+`Broker` may come with unacceptable message processing latencies. Horizontal scaling may help here, i.e. assignment of dedicated circular buffers per group of messages, and aligning the priorities for processing them with in the read thread.
+
+## Simplyfing
+
+Heavily-OOP solution written in C++ typically does not help the code readers. Introduction of base classes, interfaces and concepts (soon) must be preceded by proper analysis, it shall not be an ad-hoc arbitrary decision. It is not unusual that the reader would like to work with a code that follows intuition, and common sense that puts every thing in its right place.
+
+Let's try to model the general (for our four inputs) asynchronous input handler. To follow TDD style, we will make `Module` testable first by providing `newMsg` interface.
+
+```
+// STL misses curring of metafunctions
+template<class T>
+struct is_t
+{
+    template<class U>
+    using apply = std::is_same<T, U>;
+};
+
+
+template<class T, class M>
+concept Input
+  = requires(T t, M m)
+  {
+    { t.inject(m) } -> bool
+  };
 
 
 
+struct Odometry { /* ... */ };
+struct Camera   { /* ... */ };
+struct GNSS     { /* ... */ };
+struct Lidar    { /* ... */ };
 
+
+struct Module
+{
+    using inputs_type = std::tuple<Odometry, Camera, GNSS, Lidar>;
+
+    //! Injects message M to reception buffer of input T.
+    template<class T, class M>
+      requires Input<T, M>
+    constexpr auto newMsg(M msg) const
+    {
+       static_assert(find_in_if_t<inputs_type, is_t<T>::template apply>::value
+                   , "Input not supported");
+                   
+       return std::get<T>(inputs).inject(std::move(msg));
+    }
+
+    
+    inputs_type inputs;
+};
+
+// Module m; m.newMsg<
+```
 
 
 
