@@ -175,6 +175,8 @@ class Module
  public:
     using inputs_type = std::tuple<Odometry, Camera, GNSS, Lidar>;
 
+    Module() = default;
+    
     Module(const EventSource& es)  // TODO: wont'work
     {
         [[maybe_unused]] auto r =
