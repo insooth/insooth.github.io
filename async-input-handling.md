@@ -187,8 +187,7 @@ class Module
 
 
     //! Injects message M to reception buffer of input T.
-    template<class T, class M>
-      requires Input<T, M>
+    template<Input T, class M>
     constexpr auto newMsg(M msg) const
     {
        static_assert(find_in_if_t<inputs_type, is_t<T>::template apply>::value
