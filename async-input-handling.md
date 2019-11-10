@@ -110,7 +110,7 @@ struct Lidar    { /* ... */ };
 
 `Module` embeds the input instances (cf. _port_ in composite structure diagram).
 
-```
+```c++
 //! STL misses curring of metafunctions
 template<class T>
 struct is_t
@@ -183,7 +183,7 @@ Unfortunately, the compiler won't be able to "invent" non-specified concept para
 
 | GCC 9.2.0 Unsupported | Works | Wanted |
 | --- | --- | --- |
-| <br/> `template<Input... Ts>` <br/> `Module(EventSource<Ts>...)` <br/><br/><br/> `{}` | `// Es models EventSource` <br/> `template<class... Es>` <br/> `Module(Es...)` <br/><br/><br/> `{ /* extract Input from Es */ }`| <br/>`template<class... Es>` <br/> `Module(Es...)` <br/> `// ??? are the used Inputs` <br/> `requires (EventSource<Es, ???> && ...)` <br/> `{}` |
+| <br/> `template<Input... Ts>` <br/> `Module(EventSource<Ts>...)` <br/><br/><br/> `{}` | `// Es models EventSource` <br/> `template<class... Es>` <br/> `Module(Es...)` <br/><br/><br/> `{ /* get Input from Es */ }`| <br/>`template<class... Es>` <br/> `Module(Es...)` <br/> `// ??? are the used Inputs` <br/> `requires (EventSource<Es, ???> && ...)` <br/> `{}` |
 
 ```c++
 class Module
