@@ -75,20 +75,20 @@ The re-route of the `m` is forced by `Module::newMsg` due to testability reasons
 
 From the functional point of view, we can insert a broker between `Input` and `Module` components that will solve lifetimes' issues. Imagine an additional component `Broker` that is composed of a message queue, where `Input` just writes to it, and `Modules` just reads from it. That's a single producer, single consumer design ([example solution](https://github.com/insooth/insooth.github.io/blob/master/lock-less-swapped-buffers.md)).
 
-## Middleman
+### Middleman
 
 `Broker` introduces a shared resource, not necessarily synchronised if the _read_ and _write_ threads are separated by design well enough. If the write thread pushes new messages to a circular buffer of a fixed size (i.e. we can refer to each element in the buffer by its index), effectively modifying it without a lock; and the read thread inspects that buffer, either as a reaction to an event or periodically, in order to make a copy of new messages to its thread of execution; then we can bring an additional information in a form of a (conceptual) sequence of indices into `Broker`. Only the read thread modifies the sequence of indices, while the write thread uses the information stored there to reuse elements in the circular buffer. Reuse shall happen for all the pointed indices (all or nothing strategy). Completion is indicated by setting an atomic flag. That flag is a lock-free synchronisation point between read and write threads.
 
 `Broker` may come with unacceptable message processing latencies. Horizontal scaling may help here, i.e. assignment of dedicated circular buffers per group of messages, and aligning the priorities for processing them with in the read thread.
 
-## Simplyfing
+### Simplyfing
 
 Heavily-OOP solution written in C++ typically does not help the code readers. Introduction of base classes, interfaces and concepts (soon) must be preceded by proper analysis, it shall not be an ad-hoc arbitrary decision. It is not unusual that the reader would like to work with a code that follows intuition, and common sense that puts every thing in its right place.
 
 Let's try to model the general (for our four inputs) asynchronous input handler. To follow TDD style, we will make `Module` testable first by providing `newMsg` interface.
 
-```
-// STL misses curring of metafunctions
+```c++
+//! STL misses curring of metafunctions
 template<class T>
 struct is_t
 {
@@ -97,23 +97,25 @@ struct is_t
 };
 
 
+//! Input must satisfy following constraints.
 template<class T, class M>
 concept Input
   = requires(T t, M m)
   {
-    { t.inject(m) } -> bool
+    { t.inject(m) } -> bool;
   };
 
 
-
+// Example inputs -- for exposition only.
 struct Odometry { /* ... */ };
 struct Camera   { /* ... */ };
 struct GNSS     { /* ... */ };
 struct Lidar    { /* ... */ };
 
 
-struct Module
+class Module
 {
+ public:
     using inputs_type = std::tuple<Odometry, Camera, GNSS, Lidar>;
 
     //! Injects message M to reception buffer of input T.
@@ -127,13 +129,93 @@ struct Module
        return std::get<T>(inputs).inject(std::move(msg));
     }
 
-    
+ private:
     inputs_type inputs;
 };
 
-// Module m; m.newMsg<
+// Module m; m.newMsg<Odometry>(...);
 ```
 
+Having defined `Module` we may start to write unit tests, and simultaneously to continue with the incremental design.
+
+### Event-driven
+
+Assume for the purpose of this exercise that `Module` will be event-driven, i.e. it will `react` to the notifications send by `EventSource`. To make things simple, such a notificiation will carry number of new messages available. We will connect `EventSource` to `Module` in the construct, thus effectively forcing particular object construction order, `EventSource` before `Module`.
+
+C++20 concepts [do not work well with `auto`](https://gist.github.com/insooth/9942048b835db3a902e48212f8ec5705), thus to be able to write a concept that constraints a templated function we need to embed its parameters. That is, embedded have fixed names (`typedef`s), but their actual content depends on the concrete implementation of the concept (a model).
+
+```c++
+template<class T>
+concept Input
+  = requires
+  {
+    typename T::msg_type;
+    typename T::src_type;
+  }
+ && requires(T t, typename T::msg_type m, typename T::src_type& e)
+  {
+    { t.attach(e) } -> bool;
+    { t.inject(m) } -> bool;
+  };
+
+template<class T, class U>
+concept EventSource
+  = requires(T t, std::size_t n)
+  {
+    Input<U>;
+    { t.subscribe()   } -> bool;
+    { t.get(n)        } -> std::vector<typename U::msg_type>;
+    { t.unsubscribe() } -> bool;
+  };
+```
+
+```c++
+class Module
+{
+ public:
+    using inputs_type = std::tuple<Odometry, Camera, GNSS, Lidar>;
+
+    Module(const EventSource& es)  // TODO: wont'work
+    {
+        [[maybe_unused]] auto r =
+            attach(es, std::make_index_sequence<std::tuple_size_v<inputs_type>>());
+            
+        assert(std::all_of(std::begin(r), std::end(r), true));
+    }
+
+
+    //! Injects message M to reception buffer of input T.
+    template<class T, class M>
+      requires Input<T, M>
+    constexpr auto newMsg(M msg) const
+    {
+       static_assert(find_in_if_t<inputs_type, is_t<T>::template apply>::value
+                   , "Input not supported");
+                   
+       return std::get<T>(inputs).inject(std::move(msg));
+    }
+
+ private:
+    inputs_type inputs;
+
+    //! Forwards es to inputs that reference it, then do es.subscribe,
+    //! and in dtor es.unsubscribe.
+    template<class... Is>
+    std::array<bool, sizeof...(Is)> attach(EvenSource& es, std::index_sequence<Is...>)  // TODO: won't work
+    {
+        return { std::get<Is>(inputs).attach(es)... };
+    }
+// ...
+};
+```
+
+Management of `EventSource` is delegated to inputs, which allows them implement advanced event processing (e.g. event sourcing with a window). Functionality described by `Input` concept is explicitly exposed to the `Module`.
+
+Inputs will handle asynchronous notifications from `EventSource`, process them, and fill the `promise` objects.
+
+### Composition
+
+Composable asynchronous actions with `co_await`.
 
 
 #### About this document
