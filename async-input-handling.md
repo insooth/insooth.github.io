@@ -3,7 +3,7 @@
 
 I was triggered to write this article by a software design I've discovered during a read of quite a large undocumented code base of the system-wide module. Generally speaking, the module was driven by four asynchronous inputs, and had a single asynchronous output. The mechanics to handle the module inputs introduced by the author were inconsistent. Even if at first glance all those four approaches seemed equivalent, they were different in details that, after several days of analysis, turned out to be fundamental. To put aside the existence of four different designs to handle the module's input, the overall software architecture was convoluted enough to signal code smells.
 
-# Status quo
+## Status quo
 
 The common part of the introduced designs included either a member or a base class of the `Module` that, during module's `init` phase, registered an action that was executed _asynchronously_ in a _separate_ thread of execution upon new message arrival. The action itself was just a call forward to the `Module` member function. The essence of that bizarre design (let's call it _Module-Adapter-Observer_) is presented below.
 
@@ -87,22 +87,17 @@ Heavily-OOP solution written in C++ typically does not help the code readers. In
 
 Let's try to model the general (for our four inputs) asynchronous input handler. To follow TDD style, we will make `Module` testable first by providing `newMsg` interface.
 
+We define input as some type that satisifies `Input` concept, i.e.:
+
 ```c++
-//! STL misses curring of metafunctions
-template<class T>
-struct is_t
-{
-    template<class U>
-    using apply = std::is_same<T, U>;
-};
-
-
 //! Input must satisfy following constraints.
 template<class T, class M>
+//                      ^~~ msg type as a concept parameter
 concept Input
   = requires(T t, M m)
   {
     { t.inject(m) } -> bool;
+    // ...
   };
 
 
@@ -111,6 +106,18 @@ struct Odometry { /* ... */ };
 struct Camera   { /* ... */ };
 struct GNSS     { /* ... */ };
 struct Lidar    { /* ... */ };
+```
+
+`Module` embeds the input instances (cf. _port_ in composite structure diagram).
+
+```
+//! STL misses curring of metafunctions
+template<class T>
+struct is_t
+{
+    template<class U>
+    using apply = std::is_same<T, U>;
+};
 
 
 class Module
@@ -146,11 +153,12 @@ C++20 concepts [do not work well with `auto`](https://gist.github.com/insooth/99
 
 ```c++
 template<class T>
+//              ^~~ msg type as a embedded type
 concept Input
-  = requires
+  = requires 
   {
-    typename T::msg_type;
-    typename T::src_type;
+    typename T::msg_type;  // msg type instead of an Input param
+    typename T::src_type;  // EventSource for this Input
   }
  && requires(T t, typename T::msg_type m, typename T::src_type& e)
   {
@@ -162,12 +170,20 @@ template<class T, class U>
 concept EventSource
   = requires(T t, std::size_t n)
   {
-    Input<U>;
+    requires Input<U>;
     { t.subscribe()   } -> bool;
     { t.get(n)        } -> std::vector<typename U::msg_type>;
     { t.unsubscribe() } -> bool;
   };
 ```
+
+`EventSource` is parametrised by `Input` that embeds the `EventSource` model (a type) as `src_type`. There is no possiblity to forward declare a concept. Let's accept `EventSources` in the `Module`'s constructor to forward them to `Input` models.
+
+Unfortunately, the compiler won't be able to "invent" non-specified concept parameters for us, it will bail out with an internal compiler error related to substitution failure.
+
+| GCC 9.2.0 Unsupported | Works | Wanted |
+| --- | --- | --- |
+| <br/> `template<Input... Ts>` <br/> `Module(EventSource<Ts>...)` <br/><br/><br/> `{}` | `// Es models EventSource` <br/> `template<class... Es>` <br/> `Module(Es...)` <br/><br/><br/> `{ /* extract Input from Es */ }`| <br/>`template<class... Es>` <br/> `Module(Es...)` <br/> `// ??? are the used Inputs` <br/> `requires (EventSource<Es, ???> && ...)` <br/> `{}` |
 
 ```c++
 class Module
@@ -177,7 +193,8 @@ class Module
 
     Module() = default;
     
-    Module(const EventSource& es)  // TODO: wont'work
+    template<Input... T>
+    Module(const EventSource<T>&... ess)  // TODO: wont'work
     {
         [[maybe_unused]] auto r =
             attach(es, std::make_index_sequence<std::tuple_size_v<inputs_type>>());
