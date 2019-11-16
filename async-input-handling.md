@@ -1,5 +1,5 @@
 
-# Handling asynchronous inputs, in a bizarre way
+# Handling asynchronous inputs, in a bizarre way -- WIP
 
 I was triggered to write this article by a software design I've discovered during a read of quite a large undocumented code base of the system-wide module. Generally speaking, the module was driven by four asynchronous inputs, and had a single asynchronous output. The mechanics to handle the module inputs introduced by the author were inconsistent. Even if at first glance all those four approaches seemed equivalent, they were different in details that, after several days of analysis, turned out to be fundamental. To put aside the existence of four different designs to handle the module's input, the overall software architecture was convoluted enough to signal code smells.
 
