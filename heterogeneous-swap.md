@@ -1,4 +1,4 @@
- # WIP: Heterogeneous swap
+ # **WIP:** Heterogeneous swap
 
 A colleague of mine asked me a question about the most effective way to transform a `string` into a `vector<int8_t>`, sequence of [ASCII codes](http://www.asciitable.com/), where each character in the string gets its integer ASCII code.
 
