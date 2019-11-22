@@ -49,7 +49,7 @@ class A { int i; };
 class B { int i; };
 ```
 
-Having that, `std::swap` constraints its both operands to be of a single (i.e. homogeneous) `T` type, that in turn, guarantees structural equivalence for free. On the other hand, heterogeneous `swap` requires an additional _predicate_ that judges whether two types are structurally equivalent, in imaginary syntax:
+Having that, `std::swap` constraints its both operands to be of a single (i.e. homogeneous) `T` type, that in turn, guarantees structural equivalence for free. On the other hand, heterogeneous `swap` requires an additional _predicate_ that judges whether two types are structurally equivalent, C++20 snippet follows:
 
 ```c++
 template<class, class U> void swap(T&, U&) requires StructurallyEquivalent<T, U>;
