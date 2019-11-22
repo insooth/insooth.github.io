@@ -5,7 +5,7 @@ This article is a follow-up to the article [_Creating testable interfaces_](http
 
 ## Recap
 
-By making the class under test a class template parameterised by an "injected type" (cf. [article on customisation points](https://github.com/insooth/insooth.github.io/blob/master/customisation-points-support-interfaces.md)) we delegate member functions, and remaining class internals if required, to some type `T` that promises to provide the behaviour we expect (possibly expresses in a form of a `concept` as of C++20). In the GMock-world this technique is called "hi-perf dependency injection" (complementary techniques [are described in a dedicated article](https://github.com/insooth/insooth.github.io/blob/master/testable-design.md)).
+By making the class under test a class template parameterised by an "injected type" (cf. [article on customisation points](https://github.com/insooth/insooth.github.io/blob/master/customisation-points-support-interfaces.md)) we delegate member functions, and remaining class internals if required, to some type `T` that promises to provide the behaviour we expect (possibly expressed in a form of a `concept` as of C++20). In the GMock-world this technique is called "hi-perf dependency injection" (complementary techniques [are described in a dedicated article](https://github.com/insooth/insooth.github.io/blob/master/testable-design.md)).
 
 ```c++
 template<class Injected>
