@@ -1,5 +1,5 @@
 
-# Delaying things
+# WIP: Delaying things
 
 Think about functions as they were structured data. Use a structure to delay function application, its output and input.
 
