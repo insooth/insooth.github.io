@@ -1,5 +1,5 @@
 
-# Designing intrusive data types
+# WIP: Designing intrusive data types
 
 Designing for resource-constrained systems requires more attention that usual. We need to pose "what if" question much often, ask for edge conditions and handle _all_ the cases we can anticipate. We need to understand control flow and deal with it transparently; know the resources, their owners and lifetime. We need to do multitude of things and do them with care, and at the same time keep our design _simple_, it may be complex but never complicated.
 
