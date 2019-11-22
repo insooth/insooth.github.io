@@ -67,7 +67,7 @@ The general question arises here: how to uniquely associate a particular lambda 
 
 > A phantom type is a parametrised type whose parameters do not all appear on the right-hand side of its definition
 
-Which translates to a C++ class template in which not all of the passed parameters are realised in the memory (i.e. they exist only during compilation time). Phantom type is a type equipped with a tag only available during compile-time. 
+The above translates to a C++ class template in which not all of the passed parameters are realised in the memory (i.e. they exist only during compilation time). Phantom type is a type equipped with a tag only available during compile-time. 
 
 ```c++
 template<class Tag, class U> struct box { U u; };
