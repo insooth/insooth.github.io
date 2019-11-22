@@ -1,4 +1,4 @@
-# WIP: Design enabled for functional testing
+# **WIP:** Design enabled for functional testing
 
 While white-box testing like unit testing requires full knowledge of the structure and behaviour of the tested part of code, functional testing considers only externally visible interfaces and the contents of the consumed and produced data. Thus, functional testing, can be seen as black-box testing, where knowledge of the data and interfaces come directly from the documentation, rather than through lengthy _code exploration_ and guessing the author's idea.
 
