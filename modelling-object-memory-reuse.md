@@ -1,5 +1,5 @@
 
-# WIP: Modelling reuse of object memory
+# **WIP:** Modelling reuse of object memory
 
 We would like to minimise memory fragmentation by reusing already allocated memory once it is no longer owned by the application. For fixed-size data it is easily achievable with a pool of fixed-size objects. Reusing varying-size objects needs more attention.
 
