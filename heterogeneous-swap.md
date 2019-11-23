@@ -17,7 +17,7 @@ swap(s, v);  // <<<
 assert(s.empty());
 ```
 
-It would be great if the above worked well, but it didn't. STL's [`swap` is defined](https://en.cppreference.com/w/cpp/algorithm/swap) for homogeneous types (here: `T` type), i.e.
+It would be great if the above worked well, but it didn't. STL's [`swap` is defined](https://en.cppreference.com/w/cpp/algorithm/swap) for homogeneous types (here: `T` type), i.e. (simplified)
 
 ```c++
 template<class T> void swap(T&, T&);
@@ -49,7 +49,7 @@ class A { int i; };
 class B { int i; };
 ```
 
-Having that, `std::swap` constraints its both operands to be of a single (i.e. homogeneous) `T` type, that in turn, guarantees structural equivalence for free. On the other hand, heterogeneous `swap` requires an additional _predicate_ that judges whether two types are structurally equivalent, C++20 snippet follows:
+Having that, `std::swap` constraints its both operands to be of a single (i.e. homogeneous) `T` type, that in turn, guarantees structural equivalence for free. On the other hand, heterogeneous `swap` requires an additional _predicate_ that judges whether two types are structurally equivalent, (simplified) C++20 snippet follows:
 
 ```c++
 template<class, class U> void swap(T&, U&) requires StructurallyEquivalent<T, U>;
@@ -69,16 +69,29 @@ concept StructurallyEquivalent
 
 Heterogeneous case requires a dedicated construct to run the actual structural equivalence check on `T` and `U` types.
 
+---
 
-### Sidenote
-
-Structural equivalence is very useful in software source code analysis, aka "code reading". Every piece of code has its functional equivalent expressed in plain structural equivalent and a set of actions with attributes (like `async`, `generated`, etc.). Set of structural equivalents can be limited to an absolute minimum, e.g. to a _list_ construct as it was done in Lisp; or sequences `[a]`, tuples `(t, u, ...)`, alternatives `x|y|...`, and combined types like maps `[(k1, v1), (k2, v2), ...]`.
+Side note. Structural equivalence is very useful in software source code analysis, aka "code reading". Every piece of code has its functional equivalent expressed in plain structural equivalent and a set of actions with attributes (like `async`, `generated`, etc.). Set of structural equivalents can be limited to an absolute minimum, e.g. to a _list_ construct as it was done in Lisp; or sequences `[a]`, tuples `(t, u, ...)`, alternatives `x|y|...`, and combined types like maps `[(k1, v1), (k2, v2), ...]`.
 
 ## Concepts
 
-> std::basic_string satisfies the requirements of AllocatorAwareContainer, SequenceContainer and ContiguousContainer
-> swap: T must meet the requirements of MoveAssignable and MoveConstructible. 
-> std::vector (for T other than bool) meets the requirements of Container, AllocatorAwareContainer, SequenceContainer, ContiguousContainer and ReversibleContainer. 
+`std::swap`, which is parametrised by type `T`, imposes following requirements on its parameter:
+* `MoveAssignable` and `MoveConstructible`; predicates: [`std::is_move_constructible_v`](https://en.cppreference.com/w/cpp/types/is_move_constructible) and [`std::is_move_assignable_v`](https://en.cppreference.com/w/cpp/types/is_move_assignable).
+* `Swappable` for `[T]`; predicate: [`std::is_swappable_v`](https://en.cppreference.com/w/cpp/types/is_swappable).
+
+Interestingly, `Swappable` can be realised by means of a `std` trait parametrised by two (possibly) distinct types, which may be used during definition of a `StructurallyEquivalent` concept:
+
+```
+template< class T, class U > struct is_swappable_with;
+```
+
+Looking further, `std::basic_string<char>` (aka `std::string`) meets the following requirements:
+* [`AllocatorAwareContainer`](https://en.cppreference.com/w/cpp/named_req/AllocatorAwareContainer); customisation point: [`std::allocator_traits<A>`](https://en.cppreference.com/w/cpp/named_req/AllocatorAwareContainer).
+* [`SequenceContainer`](https://en.cppreference.com/w/cpp/named_req/SequenceContainer), and [`ContiguousContainer`](https://en.cppreference.com/w/cpp/named_req/ContiguousContainer) which is a conjunction of [`Container`](https://en.cppreference.com/w/cpp/named_req/Container), [`LegacyRandomAccessIterator`](https://en.cppreference.com/w/cpp/named_req/RandomAccessIterator), and [`LegacyContiguousIterator`](https://en.cppreference.com/w/cpp/named_req/ContiguousIterator) for iterator's nested member type.
+
+While `std::vector` (for `T` other than `bool`) meets the requirements of `AllocatorAwareContainer`, `SequenceContainer`, `ContiguousContainer`, `Container`, and [`ReversibleContainer`](https://en.cppreference.com/w/cpp/named_req/ReversibleContainer) which must meet `LegacyRandomAccessIterator` or [`LegacyBidirectionalIterator`](https://en.cppreference.com/w/cpp/named_req/BidirectionalIterator) (which is a subset of `LegacyRandomAccessIterator`).
+
+It is easy to notice that `std::vector` meets all the requirements of `std::string` if it satisfies `LegacyRandomAccessIterator` (in `ReversibleContainer`). From the concept-based point of view, `std::vector<T>` is a subset of `std::string` for some `T`.
 
 
 ## `pmr`
