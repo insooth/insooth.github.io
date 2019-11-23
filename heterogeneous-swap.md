@@ -24,7 +24,7 @@ template<class T> void swap(T&, T&);
 //             ^            ^   ^
 ```
 
-While `std::swap` cannot be defined for two different types, and neither `vector` constructor takes `string` as an argument to steal its contents (cf. `move`), nor `string` constructor does that for `vector`, we have to look for another solution. This article is an attempt to use structural equivalence and stateful allocators as an enabler of heterogeneous swap.
+While `std::swap` cannot be defined for two different types, and neither `vector` constructor takes `string` as an argument to steal its contents (cf. `move`), nor `string` constructor does that for `vector`, we have to look for another solution. This article is an attempt to use structural equivalence and custom allocators as an enabler of heterogeneous swap.
 
 ## Equivalence
 
@@ -82,7 +82,7 @@ Side note. Structural equivalence is very useful in software source code analysi
 Interestingly, `Swappable` can be realised by means of a `std` trait parametrised by two (possibly) distinct types, which may be used during definition of a `StructurallyEquivalent` concept:
 
 ```
-template< class T, class U > struct is_swappable_with;
+template<class T, class U> struct is_swappable_with;
 ```
 
 Looking further, `std::basic_string<char>` (aka `std::string`) meets the following requirements:
@@ -94,9 +94,13 @@ While `std::vector` (for `T` other than `bool`) meets the requirements of `Alloc
 It is easy to notice that `std::vector` meets all the requirements of `std::string` if it satisfies `LegacyRandomAccessIterator` (in `ReversibleContainer`). From the concept-based point of view, `std::vector<T>` is a subset of `std::string` for some `T`.
 
 
-## `pmr`
+## AllocatorAwareContainer and direct memory access
 
-Custom allocator
+> polymorphic_allocator does not propagate on container copy assignment, move assignment, or swap. As a result, move assignment of a polymorphic_allocator-using container can throw, and swapping two polymorphic_allocator-using containers whose allocators do not compare equal results in undefined behavior. 
+
+> std::allocator_traits<allocator_type>::propagate_on_container_swap
+
+Custom static allocator
 
 #### About this document
 
