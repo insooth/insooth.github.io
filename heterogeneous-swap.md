@@ -26,6 +26,8 @@ template<class T> void swap(T&, T&);
 
 While `std::swap` cannot be defined for two different types, and neither `vector` constructor takes `string` as an argument to steal its contents (cf. `move`), nor `string` constructor does that for `vector`, we have to look for another solution. This article is an attempt to use structural equivalence and custom allocators as an enabler of heterogeneous swap.
 
+Side note. Revision C++14 of the language brings [`T std::exchange(T&, U&&)`](https://en.cppreference.com/w/cpp/utility/exchange) that implements a heteregenous "replace with" algorithm.
+
 ## Equivalence
 
 If we look a little bit closer at the swap behaviour we will realise that it works because there is an implicit _structural_ equivalence relation established between its operands. That is, `swap(T, U)` will do what's expected if `T` and `U` data types are equivalent. Type checker in the C++ language implements type equivalence in a form of name equivalence (strong (new types) &mdash; `class`, `enum class`, and loose (type aliases) &mdash; `typedef`, `enum`), consider the following:
