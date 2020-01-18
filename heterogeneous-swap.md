@@ -105,13 +105,13 @@ Once we establish a structural equivalence for a pair of types, we may try to _s
 Even if [`pmr`](https://en.cppreference.com/w/cpp/memory/polymorphic_allocator) offers dynamic selection of an allocator, we cannot use it. Consider this note from the reference (emphasis is mine):
 > `polymorphic_allocator` **does not propagate on** container copy assignment, move assignment, or **swap**. As a result, move assignment of a `polymorphic_allocator`-using container can throw, and swapping two `polymorphic_allocator`-using containers whose allocators do not compare equal results in undefined behavior. 
 
-We want to move the state while swapping the data type `T` allocated using `Alloc<T>`. To do so we need to inform `allocator_traits` it is acutally possible through `propagate_on_container_swap` class member.
+We want to move the state while swapping the data type `T` allocated using `Alloc<T>`. To do so we need to inform `allocator_traits` it is acutally possible through `propagate_on_container_swap` member type.
 
 ```c++
 template<class T>
 struct Alloc
 {
-  static constexpr propagate_on_container_swap = std::true_type;
+  using propagate_on_container_swap = std::true_type;
   
   // state and behaviour
 };
