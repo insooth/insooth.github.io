@@ -4,7 +4,7 @@ A colleague of mine asked me a question about the most effective way to transfor
 
 That can be easily [solved with a `std::transform`](https://gist.github.com/insooth/30fa720d0d18eafc733880bef3d01acc) and an explicit cast. 
 
-In fact, we do the cast to make compiler happy rather than to change the underlying binary representation. Since `string::value_type` and `int8_t` are identical in memory (both occupy a byte), and both `vector` and `string` are (roughly) _equivalent_ to `T*` and some metadata (if <acronym title="Small Buffer Optimisation">SBO</acronym> is not considered), we may be tempted to do a swap:
+In fact, we do a cast to make compiler happy rather than to change the underlying binary representation. Since `string::value_type` and `int8_t` are identical in memory (both occupy a byte), and both `vector` and `string` are (roughly) _equivalent_ to `T*` and some metadata (if <acronym title="Small Buffer Optimisation">SBO</acronym> is not considered), we may be tempted to do a swap:
 
 ```
 string s = "Hello world";
