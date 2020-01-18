@@ -102,8 +102,8 @@ Side note. It is worth to note that while both the following concepts must be sa
 
 Once we establish a structural equivalence for a pair of types, we may try to _swap_ their memory representations. To do that we need to define a custom allocator, its properties to fulfill ["allocator completeness requirements"](https://en.cppreference.com/w/cpp/named_req/Allocator#Allocator_completeness_requirements) (via optional specialisation of [`std::allocator_traits`](https://en.cppreference.com/w/cpp/memory/allocator_traits)), and actual behaviour during swap operation. Since we want to transfer the current state from one abstraction to the another, the designed allocator shall be stateful.
 
-Even if [`pmr`](https://en.cppreference.com/w/cpp/memory/polymorphic_allocator) offers dynamic selection of an allocator, we cannot use it. Consider this note from the reference:
-> polymorphic_allocator does not propagate on container copy assignment, move assignment, or swap. As a result, move assignment of a polymorphic_allocator-using container can throw, and swapping two polymorphic_allocator-using containers whose allocators do not compare equal results in undefined behavior. 
+Even if [`pmr`](https://en.cppreference.com/w/cpp/memory/polymorphic_allocator) offers dynamic selection of an allocator, we cannot use it. Consider this note from the reference (emphasis is mine):
+> `polymorphic_allocator` *does not propagate on* container copy assignment, move assignment, or *swap*. As a result, move assignment of a `polymorphic_allocator`-using container can throw, and swapping two `polymorphic_allocator`-using containers whose allocators do not compare equal results in undefined behavior. 
 
 We want to move the state while swapping the data type `T` allocated using `Alloc<T>`. To do so we need to inform `allocator_traits` it is acutally possible through `propagate_on_container_swap` class member.
 
