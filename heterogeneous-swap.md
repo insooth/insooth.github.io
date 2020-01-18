@@ -42,7 +42,7 @@ enum X { bad };
 int horribly = bad;
 ```
 
-While name equivalence is desired for the compiler, `swap` implementation is interested in the actual structure of the type to be able to actually swap the things. Sadly, C++ language does not offer built-in constructs to perform the types' structural equivalence, i.e. compare the types recursively, not the values they describe. Consider the following:
+While name equivalence is desired for the compiler, `swap` implementation is interested in the actual structure of the type to be able to actually swap the things. Sadly, C++ language does not offer built-in constructs to perform the a structural equivalence test on types, i.e. compare the types recursively, rather than the values they describe. Consider the following:
 
 ```c++
 // A and B are equivalent under structural equivalence
