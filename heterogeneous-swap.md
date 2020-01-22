@@ -73,7 +73,7 @@ Heterogeneous case requires a dedicated construct to run the actual structural 
 
 ---
 
-Side note. Structural equivalence is very useful in software source code analysis, aka "code reading". Every piece of code has its functional equivalent expressed in plain structural equivalent and a set of actions with attributes (like `async`, `generated`, etc.). Set of structural equivalents can be limited to an absolute minimum, e.g. to a _list_ construct as it was done in Lisp; or sequences `[a]`, tuples `(t, u, ...)`, alternatives `x|y|...`, and combined types like maps `[(k1, v1), (k2, v2), ...]`.
+Side note. Structural equivalence is very useful in software source code analysis, aka "code reading"; as well as in the software prototyping (my advice here is to use Haskell(-like) language directly). Every piece of code has its functional equivalent expressed in plain structural equivalent and a set of actions with attributes (like `async`, `generated`, etc.). Set of structural equivalents can be limited to an absolute minimum, e.g. to a _list_ construct as it was done in Lisp; or sequences `[a]`, tuples `(t, u, ...)`, alternatives `x|y|...`, and combined types like maps `[(k1, v1), (k2, v2), ...]`.
 
 ## Concepts
 
@@ -102,6 +102,8 @@ Side note. It is worth to note that while both the following concepts must be sa
 
 Once we establish a structural equivalence for a pair of types, we may try to _swap_ their memory representations. To do that we need to define a custom allocator, its properties to fulfill ["allocator completeness requirements"](https://en.cppreference.com/w/cpp/named_req/Allocator#Allocator_completeness_requirements) (via optional specialisation of [`std::allocator_traits`](https://en.cppreference.com/w/cpp/memory/allocator_traits)), and actual behaviour during swap operation. Since we want to transfer the current state from one abstraction to the another, the designed allocator shall be stateful.
 
+Notice that by performing a heterogeneous `swap` we, in fact, simulate `move` in contexts where it is actually not supported by design at all (like `vector<char> v = move(str)` where type of `str` is `string`).
+
 Even if [`pmr`](https://en.cppreference.com/w/cpp/memory/polymorphic_allocator) offers dynamic selection of an allocator, we cannot use it. Consider this note from the reference (emphasis is mine):
 > `polymorphic_allocator` **does not propagate on** container copy assignment, move assignment, or **swap**. As a result, move assignment of a `polymorphic_allocator`-using container can throw, and swapping two `polymorphic_allocator`-using containers whose allocators do not compare equal results in undefined behavior. 
 
@@ -114,6 +116,8 @@ struct Alloc
   using propagate_on_container_swap = std::true_type;
   
   // state and behaviour
+  
+  
 };
 ```
 
