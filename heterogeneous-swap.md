@@ -110,18 +110,78 @@ Even if [`pmr`](https://en.cppreference.com/w/cpp/memory/polymorphic_allocator) 
 We want to move the state while swapping the data type `T` allocated using `Alloc<T>`. To do so we need to inform `allocator_traits` it is acutally possible through `propagate_on_container_swap` member type.
 
 ```c++
-template<class T>
-struct Alloc
+template<class T, class BackingT>
+struct ByteSeqAlloc
 {
+  using allocator_type = ByteSeqAlloc;
   using propagate_on_container_swap = std::true_type;
+  using value_type = T;
   
-  // state and behaviour
+  static_assert(std::is_convertible_v<T, BackingT>
+             && std::is_convertible_v<BackingT, T>);
   
+  // state [--
+  BackingT* last    = nullptr;  // last allocated ptr
+  std::size_t lastN = 0;        // last passed n
+  bool reuse        = false;    // shall next allocate reuse `last`?
+  // --] state end
+
+  [[nodiscard]] T* allocate(std::size_t n)
+  {
+    // ... 
+    
+    if (auto p = static_cast<T*>(reuse ? last : std::malloc(n * sizeof(U))))
+    {
+      last = reinterpret_cast<BackingT*>(p);
+
+      return reuse
+              ? (reuse = false, reinterpret_cast<T*>(last))
+              : (lastN = n, p);
+    }
+  }
   
+  // ...
 };
+
+std::pair<U, T> swap(T& t, U& t)
+{
+  auto aT = t.get_allocator();
+  auto aU = u.get_allocator();
+  
+  aT.reuse = true;
+  aU.reuse = true;
+
+  // inspect lastN and last to construct
+  // copies of T and U with swapped data
+  // (allocate shall return prepared memory)
+}
+```
+```
+using BackingT = std::common_type_t<char, std::uint8_t>;
+
+std::basic_string<
+    char
+  , std::char_traits<char>
+  , ByteSeqAlloc<char, BackingT>
+  > s = {'a', 'b', ...};
+
+std::vector<
+    std::uint8_t
+  , ByteSeqAlloc<std::uint8_t, BackingT>
+  > v = {97, 98, ...};
+  
+auto [v1, s1] = swap(s, v);
 ```
 
-http://coliru.stacked-crooked.com/a/c0db84e26e41f270
+Unfortunately, that's a the dead end rather than a proper solution. Memory management issues come into play, e.g. what if the original items that hold the pointers to the allocated memory try to reclaim it. SBO optimisation in `std::string` completely bypasses the allocator, i.e. this solution may work only for large enough strings. 
+
+## Alternative
+
+Helpful may be `span` from GSL and C++20:
+
+```c++
+std::span<std::uint8_t> v{s.data(), s.length()};
+```
 
 #### About this document
 
