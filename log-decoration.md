@@ -1,11 +1,11 @@
 
 # Decorating with a side effect
 
-In an ideal world of software, all the side effects are isolated, and we verify pure actions only. Unfortunately, in a real world software, side effects are ubiquitous, and they are inherently polluting pure code. Logging is one of such overused features that leads to costly side effects (consider distributed logging, a DLT, prevalent in automotive industry). This article describes a technique that is used to extract side effects brought by logging, and then compose with them back in a well defined manner.
+In an ideal world of software, all the side effects are isolated, and we verify pure actions only. Unfortunately, in the real world software, side effects are ubiquitous, and they are inherently polluting the code. Logging is one of such overused features that leads to costly side effects (consider distributed logging, a DLT, prevalent in automotive industry). This article describes a technique that is used to extract side effects brought by logging, and then compose with them back in a well defined manner.
 
 ## Extract
 
-Generally speaking, all the information that triggers logging action inside a given function shall be exposed to the caller of that function in its result value (and/or type). Example modelling of that case is described in [_Log less, log once_](https://github.com/insooth/insooth.github.io/blob/master/log-less-log-once.md) article. In short, in the mentioned article we lift a result type of a function to extract information that triggers a log:
+Generally speaking, all the information that triggers logging action inside a given function shall be exposed to the caller of that function in its result value (and/or type). Example modelling of that case is described in [_Log less, log once_](https://github.com/insooth/insooth.github.io/blob/master/log-less-log-once.md) article. In short, in the mentioned article we lift a result type of a function into a such that enables us to extract information that actually triggers a log:
 
 ```
  original:          lifted into `Either e bool`:
@@ -23,9 +23,9 @@ Value of a lifted type carries information that is consumed by a logger in order
 bool foo(T)  ==>  pair<InfoForLogger, bool> foo(T)  ==>  make_log(foo(T{))) -> bool
 ```
 
-where `auto make_log(auto)` is an action that extracts `InfoForLogger` from the `foo`'s result type, does the actual logging, and returns the original `foo`'s result. That is, _unlifted_ is equal to the original, logging is just an optional decoration.
+where `auto make_log(auto)` is an action that extracts `InfoForLogger` from the `foo`'s result type, does the actual logging, and returns the original `foo`'s result. That is, _unlifted_ is equal to the original, logging is just an optional decoration. One may extend the _stack_ of side effects by simply embedding more information into the lifted type, and to unlift it one by one through function composition.
 
-Example interface, `make_log`, uses a customisaton point `run_log` that can be optionally stateful (`Logger` instance will be forwarded to its constructor), and which shall expose a function call operator that takes value of type `T`, does the actual logging, and _transforms_ the lifted `T` into an unlifted representation. Customisaton point for equal `T` may be tagged with a `Tag` type to differentiate equal `T` types.
+Example interface, `make_log`, uses a customisaton point `run_log` that can be optionally stateful (`Logger` instance will be forwarded to its constructor), and which shall expose a function call operator that takes a value of type `T`, does the actual logging, and _transforms_ the lifted `T` into an unlifted representation. Customisaton point for equal `T` may be tagged with a `Tag` type to differentiate equal `T` types.
 
 ```c++
 /** @{ Tagged. */
