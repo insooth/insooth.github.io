@@ -20,7 +20,7 @@ Value of a lifted type carries information that is consumed by a logger in order
 
 ```
  original:          lifted into `Either e bool`:         do a side effect and unlift:
-bool foo(T)  ==>  pair<InfoForLogger, bool> foo(T)  ==>  make_log(foo(T{))) -> bool
+bool foo(T)  ==>  pair<InfoForLogger, bool> foo(T)  ==>  make_log(foo(T{})) -> bool
 ```
 
 where `auto make_log(auto)` is an action that extracts `InfoForLogger` from the `foo`'s result type, does the actual logging, and returns the original `foo`'s result. That is, _unlifted_ is equal to the original, logging is just an optional decoration. One may extend the _stack_ of side effects by simply embedding more information into the lifted type, and to unlift it one by one through function composition.
