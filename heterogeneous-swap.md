@@ -2,7 +2,7 @@
 
 A colleague of mine asked me a question about the most effective way to transform a `string` into a `vector<int8_t>`, a sequence of [ASCII codes](http://www.asciitable.com/), where each one character in the input `string` gets its integer ASCII code assigned.
 
-That can be easily [solved with a `std::transform`](https://gist.github.com/insooth/30fa720d0d18eafc733880bef3d01acc) and an explicit cast. 
+That can be easily [solved with a `std::transform`](https://gist.github.com/insooth/30fa720d0d18eafc733880bef3d01acc) and an explicit cast. It can be solved even easier by simply picking the proper types at software design phase (which is an obvious rule, but not commonly enforced).
 
 In fact, we do a cast to make compiler happy rather than to change the underlying binary representation. Since `string::value_type` and `int8_t` are identical in memory (both occupy a byte), and both `vector` and `string` are (roughly) _equivalent_ to `T*` and some metadata (if <acronym title="Small Buffer Optimisation">SBO</acronym> is not considered), we may be tempted to do a swap:
 
@@ -26,7 +26,7 @@ template<class T> void swap(T&, T&);
 
 While `std::swap` cannot be defined for two different types, and neither `vector` constructor takes `string` as an argument to steal its contents (cf. `move`), nor `string` constructor does that for `vector`, we have to look for another solution. This article is an attempt to use structural equivalence and custom allocators as an enabler of heterogeneous swap.
 
-Side note. Revision C++14 of the language brings [`T std::exchange(T&, U&&)`](https://en.cppreference.com/w/cpp/utility/exchange) that implements a heteregenous "replace with" algorithm.
+Side note. Revision C++14 of the language brings [`T std::exchange(T&, U&&)`](https://en.cppreference.com/w/cpp/utility/exchange) that implements a heteregenous "replace with" algorithm. Unfortunately, there is a type constraint put on objects of type `T` that states there shall be possible to move-assign objects of type `U` to `T` objects, i.e. `T` shall define a move-assignment operator that takes a `U` object. In other words, definition of `T` type assumes both the existence and the properties of `U` type, and explicitly exposes mechanics to _cooperate_ with the internals of that type, which all is not in scope of our case.
 
 ## Equivalence
 
