@@ -4,7 +4,7 @@ A colleague of mine asked me a question about the most effective way to transfor
 
 That can be easily [solved with a `std::transform`](https://gist.github.com/insooth/30fa720d0d18eafc733880bef3d01acc) and an explicit cast. It can be solved even easier by simply picking the proper types at software design phase (which is an obvious rule, but not commonly enforced).
 
-In fact, we do a cast to make compiler happy rather than to change the underlying binary representation. Since `string::value_type` and `int8_t` are identical in memory (both occupy a byte), and both `vector` and `string` are (roughly) _equivalent_ to `T*` and some metadata (if <acronym title="Small Buffer Optimisation">SBO</acronym> is not considered), we may be tempted to do a swap:
+In fact, we do a cast to make compiler happy rather than to change the underlying binary representation. Since `string::value_type` and `int8_t` are identical in memory (both occupy a byte), and both `vector` and `string` are (roughly) _equivalent_ to `T*` and some metadata (if <acronym title="Small Buffer Optimisation">SBO/SSO</acronym> is not considered, or we allocate enough memory to bypass it), we may be tempted to do a swap:
 
 ```
 string s = "Hello world";
@@ -42,7 +42,7 @@ enum X { bad };
 int horribly = bad;
 ```
 
-While name equivalence is desired for the compiler, `swap` implementation is interested in the actual structure of the type to be able to actually swap the things. Sadly, C++ language does not offer built-in constructs to perform a structural equivalence test on types, i.e. compare the types recursively, rather than the values they describe. Consider the following:
+While name equivalence is desired for the compiler, `swap` implementation is interested in the actual structure of the type to be able to actually swap the things. Sadly, C++ language does not offer built-in constructs to perform a structural equivalence test on types, i.e. compare the types recursively, rather than the values they describe, which is a tough task in general. Consider the following:
 
 ```c++
 // A and B are equivalent under structural equivalence
@@ -73,11 +73,11 @@ Heterogeneous case requires a dedicated construct to run the actual structural 
 
 ---
 
-Side note. Structural equivalence is very useful in software source code analysis, aka "code reading"; as well as in the software prototyping (my advice here is to use Haskell(-like) language directly). Every piece of code has its functional equivalent expressed in plain structural equivalent and a set of actions with attributes (like `async`, `generated`, etc.). Set of structural equivalents can be limited to an absolute minimum, e.g. to a _list_ construct as it was done in Lisp; or sequences `[a]`, tuples `(t, u, ...)`, alternatives `x|y|...`, and combined types like maps `[(k1, v1), (k2, v2), ...]`.
+Side note. Structural equivalence is very useful in software source code analysis, aka "code reading"; as well as in the software prototyping. If try to imagine that every piece of code has its functional equivalent expressed in a plain structural equivalent, and a set of actions with attributes (like `async`, `generated`, etc.); and if we limit the set of structural equivalents can be limited to an absolute minimum, e.g. to a _list_ construct as it was done in Lisp; or sequences `[a]`, tuples `(t, u, ...)`, alternatives `x|y|...`, and combined types like maps `[(k1, v1), (k2, v2), ...]`; we will be able to describe that piece of software in terms of that equivalents and functions that transform them into other equivalents.
 
 ## Concepts
 
-`std::swap`, which is parametrised by type `T`, imposes following requirements on its parameter:
+Let's tackle the problem from the concepts' perspective. Function template `std::swap`, which is parametrised by type `T`, imposes following requirements on its parameter:
 * `MoveAssignable` and `MoveConstructible`; predicates: [`std::is_move_constructible_v`](https://en.cppreference.com/w/cpp/types/is_move_constructible) and [`std::is_move_assignable_v`](https://en.cppreference.com/w/cpp/types/is_move_assignable).
 * `Swappable` for `[T]`; predicate: [`std::is_swappable_v`](https://en.cppreference.com/w/cpp/types/is_swappable).
 
@@ -95,12 +95,16 @@ Type constructor [`std::vector`](https://en.cppreference.com/w/cpp/container/vec
 
 It is easy to notice that `std::vector` meets all the requirements of `std::string` if it satisfies `LegacyRandomAccessIterator` (in `ReversibleContainer`). From the concept-based point of view, `std::vector<T>` is a subset of `std::string` for some `T`.
 
-Side note. It is worth to note that while both the following concepts must be satisified for `std::vector`, `ContiguousContainer` requires `LegacyRandomAccessIterator` solely, but `ReversibleContainer` is free to choose its weaker form (i.e. `LegacyBidirectionalIterator`). 
+Side note. It is worth to note that while both the following concepts must be satisified for `std::vector`, the `ContiguousContainer` requires `LegacyRandomAccessIterator` solely, but `ReversibleContainer` is free to choose its weaker form (i.e. `LegacyBidirectionalIterator`).
 
 
 ## AllocatorAwareContainer and direct memory access
 
-Once we establish a structural equivalence for a pair of types, we may try to _swap_ their memory representations. To do that we need to define a custom allocator, its properties to fulfill ["allocator completeness requirements"](https://en.cppreference.com/w/cpp/named_req/Allocator#Allocator_completeness_requirements) (via optional specialisation of [`std::allocator_traits`](https://en.cppreference.com/w/cpp/memory/allocator_traits)), and actual behaviour during swap operation. Since we want to transfer the current state from one abstraction to the another, the designed allocator shall be stateful.
+Once we establish a structural equivalence for a pair of types, we may try to _swap_ their memory representations. The actual handle to a memory region is known and its manged by the object itself by means of an allocator object which we may prepare and inject into that object.
+
+To do that we need to define a custom allocator, its properties that fulfill ["allocator completeness requirements"](https://en.cppreference.com/w/cpp/named_req/Allocator#Allocator_completeness_requirements) (via optional specialisation of [`std::allocator_traits`](https://en.cppreference.com/w/cpp/memory/allocator_traits)), and the actual behaviour during swap operation. Caveat here: the allocator itself does not know the `swap` operation is ongoing, moreover there is no possiblity to update the internals of the swapped objects from inside the allocator object (but we may return a handle to the last allocated memory region as it was stored in the allocator state upon call to `allocate`).
+
+We want to transfer the current state from one abstraction to the another, thus the designed allocator shall be stateful.
 
 Notice that by performing a heterogeneous `swap` we, in fact, simulate `move` in contexts where it is actually not supported by design at all (like `vector<char> v = move(str)` where type of `str` is `string`).
 
@@ -157,7 +161,7 @@ std::pair<U, T> swap(T& t, U& t)
 }
 ```
 ```
-using BackingT = std::common_type_t<char, std::uint8_t>;
+using BackingT = std::common_type_t<char, std::int8_t>;
 
 std::basic_string<
     char
@@ -166,16 +170,20 @@ std::basic_string<
   > s = {'a', 'b', ...};
 
 std::vector<
-    std::uint8_t
-  , ByteSeqAlloc<std::uint8_t, BackingT>
+    std::int8_t
+  , ByteSeqAlloc<std::int8_t, BackingT>
   > v = {97, 98, ...};
   
 auto [v1, s1] = swap(s, v);
 ```
 
-Unfortunately, that's a the dead end rather than a proper solution. Memory management issues come into play, e.g. what if the original items that hold the pointers to the allocated memory try to reclaim it. SBO optimisation in `std::string` completely bypasses the allocator, i.e. this solution may work only for large enough strings. 
+Note that, the propagation of an allocator is applicable to the standard homogeneous swap only!
+
+Unfortunately, that's a the dead end rather than a working solution. Memory management issues come into play, e.g. what if the original items that hold the pointers to the allocated memory try to reclaim it. SBO optimisation in `std::string` completely bypasses the allocator, i.e. this solution may work only for large enough strings. Moreover, depending on the [initialisation scheme](https://en.cppreference.com/w/cpp/language/initialization) invoked we may get the intercepted memory region zeroed.
 
 ## Alternative
+
+
 
 Helpful may be `span` from GSL and C++20:
 
@@ -185,6 +193,6 @@ std::span<std::uint8_t> v{s.data(), s.length()};
 
 #### About this document
 
-November 16, 2019; January 18, 2020 &mdash; Krzysztof Ostrowski
+February 1, 2020 &mdash; Krzysztof Ostrowski
 
 [LICENSE](https://github.com/insooth/insooth.github.io/blob/master/LICENSE)
