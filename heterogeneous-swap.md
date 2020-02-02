@@ -187,7 +187,7 @@ To solve our puzzle we will redefine the problem. Rather than looking for a conv
 
 C++ offers [`std::span`](https://en.cppreference.com/w/cpp/container/span) and [`std::string_view`](https://en.cppreference.com/w/cpp/string/basic_string_view) as a non-owning containers, while [`ranges::to` (P1206R1)](wg21.link/p1206) functionality offers conversion of a range to a container (by means of a structural equivalence). In fact, none of the presented abstractions matches all of our needs. Consider the following `view_as` memory region interpreter:
 
-```
+```c++
 template<class T, std::size_t Step = 1>
 struct view_as
 {
