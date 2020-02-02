@@ -63,7 +63,7 @@ The general question arises here: how to uniquely associate a particular lambda 
 
 ## Making phantom types
 
-[Haskell wiki](https://wiki.haskell.org/Phantom_type) defines _phanton type_ as:
+[Haskell wiki](https://wiki.haskell.org/Phantom_type) defines _phantom type_ as:
 
 > A phantom type is a parametrised type whose parameters do not all appear on the right-hand side of its definition
 
