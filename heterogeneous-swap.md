@@ -1,10 +1,10 @@
- # **WIP:** Heterogeneous swap
+ # Heterogeneous swap
 
 A colleague of mine asked me a question about the most effective way to transform a `string` into a `vector<int8_t>`, a sequence of [ASCII codes](http://www.asciitable.com/), where each one character in the input `string` gets its integer ASCII code assigned.
 
 That can be easily [solved with a `std::transform`](https://gist.github.com/insooth/30fa720d0d18eafc733880bef3d01acc) and an explicit cast. It can be solved even easier by simply picking the proper types at software design phase (which is an obvious rule, but not commonly enforced).
 
-In fact, we do a cast to make compiler happy rather than to change the underlying binary representation. Since `string::value_type` and `int8_t` are identical in memory (both occupy a byte), and both `vector` and `string` are (roughly) _equivalent_ to `T*` and some metadata (if <acronym title="Small Buffer Optimisation">SBO/SSO</acronym> is not considered, or we allocate enough memory to bypass it), we may be tempted to do a swap:
+In fact, we do a cast to make compiler happy rather than to change the underlying binary representation. Since `string::value_type` and `int8_t` are identical in memory (both occupy a byte), and both `vector` and `string` are (roughly) _equivalent_ to `T*` and some metadata (if small buffer/string optimisation, SBO/SSO, is not considered, or we allocate enough memory to bypass it), we may be tempted to do a swap:
 
 ```
 string s = "Hello world";
