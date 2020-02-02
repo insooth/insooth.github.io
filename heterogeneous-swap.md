@@ -183,13 +183,62 @@ Unfortunately, that's a the dead end rather than a working solution. Memory mana
 
 ## Alternative
 
+To solve our puzzle we will redefine the problem. Rather than looking for a converter of `T` into `U`, we will search for an  interpreter of a memory region, so that it can be regarded either as `T` or `U`. That is, having a fixed allocated memory region we will apply _views_ that expose bytes within that region to the user through _defined_ abstractions (non-owning). 
 
+C++ offers [`std::span`](https://en.cppreference.com/w/cpp/container/span) and [`std::string_view`](https://en.cppreference.com/w/cpp/string/basic_string_view) as a non-owning containers, while [`ranges::to` (P1206R1)](wg21.link/p1206) functionality offers conversion of a range to a container (by means of a structural equivalence). In fact, none of the presented abstractions matches all of our needs. Consider the following `view_as` memory region interpreter:
 
-Helpful may be `span` from GSL and C++20:
-
-```c++
-std::span<std::uint8_t> v{s.data(), s.length()};
 ```
+template<class T, std::size_t Step = 1>
+struct view_as
+{
+  view_as() = default;
+  
+  template<class U>
+  view_as(U* p, std::size_t t)
+    :
+      data{reinterpret_cast<char*>(const_cast<std::remove_const_t<U>*>(p))}
+    , total{t}
+    , current{0}
+  {}
+  
+  T& operator()()             { return *next(*this); }
+  const T& operator()() const { return *next(*this); }
+
+ private:
+ 
+  template<class U, std::size_t S>
+  static auto next(view_as<U, S>& v)
+    -> std::conditional_t<
+           std::is_const_v<decltype(v)>
+         , const U*
+         , U*
+         >
+  {
+    if (v.data && (v.current < v.total))
+    { 
+      U* u = reinterpret_cast<U*>(v.data + (v.current * sizeof(U)));
+      v.current += S * sizeof(U);
+      
+      return u;
+    }
+    else { throw std::out_of_range{""}; };
+  }
+ 
+  char*       data    = nullptr;
+  std::size_t total   = 0;
+  std::size_t current = 0;
+};
+
+// usage:
+// subsequent calls to v() give: 25185, 105, 11363
+std::string s = "abcdefghi";
+view_as<std::int16_t, 2> v{s.data(), s.length()};
+```
+
+By means of `view_as` we can re-interpret the data, and skip selected values in the passed memory region. We are suffering from absence of standard iterator interface, but it is an open point for further improvements.
+
+Live code is available [on Coliru](http://coliru.stacked-crooked.com/a/08eec2a03ad34417).
+
 
 #### About this document
 
