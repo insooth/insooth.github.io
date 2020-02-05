@@ -73,7 +73,7 @@ Heterogeneous case requires a dedicated construct to run the actual structural 
 
 ---
 
-Side note. Structural equivalence is very useful in software source code analysis, aka "code reading"; as well as in the software prototyping. If try to imagine that every piece of code has its functional equivalent expressed in a plain structural equivalent, and a set of actions with attributes (like `async`, `generated`, etc.); and if we limit the set of structural equivalents can be limited to an absolute minimum, e.g. to a _list_ construct as it was done in Lisp; or sequences `[a]`, tuples `(t, u, ...)`, alternatives `x|y|...`, and combined types like maps `[(k1, v1), (k2, v2), ...]`; we will be able to describe that piece of software in terms of that equivalents and functions that transform them into other equivalents.
+Side note. Structural equivalence is very useful in software source code analysis, aka "code reading"; as well as in the software prototyping. If we imagine that every piece of code has its functional equivalent expressed in a plain structural equivalent, and a set of actions with attributes (like `async`, `generated`, etc.); and if we limit the set of structural equivalents to an absolute minimum, e.g. to a _list_ construct as it was done in Lisp; or sequences `[a]`, tuples `(t, u, ...)`, alternatives `x|y|...`, and combined types like maps `[(k1, v1), (k2, v2), ...]`; we will be able to describe a piece of software in terms of that equivalents and functions that transform equivalents into other equivalents.
 
 ## Concepts
 
@@ -100,9 +100,9 @@ Side note. It is worth to note that while both the following concepts must be sa
 
 ## AllocatorAwareContainer and direct memory access
 
-Once we establish a structural equivalence for a pair of types, we may try to _swap_ their memory representations. The actual handle to a memory region is known and its manged by the object itself by means of an allocator object which we may prepare and inject into that object.
+Once we establish a structural equivalence for a pair of types, we may try to _swap_ their memory representations. The actual handle to a memory region is known and it is managed by the object itself by means of an allocator object which we may prepare and inject into that object.
 
-To do that we need to define a custom allocator, its properties that fulfill ["allocator completeness requirements"](https://en.cppreference.com/w/cpp/named_req/Allocator#Allocator_completeness_requirements) (via optional specialisation of [`std::allocator_traits`](https://en.cppreference.com/w/cpp/memory/allocator_traits)), and the actual behaviour during swap operation. Caveat here: the allocator itself does not know the `swap` operation is ongoing, moreover there is no possiblity to update the internals of the swapped objects from inside the allocator object (but we may return a handle to the last allocated memory region as it was stored in the allocator state upon call to `allocate`).
+In order to do that we need to define a custom allocator, its properties that fulfill ["allocator completeness requirements"](https://en.cppreference.com/w/cpp/named_req/Allocator#Allocator_completeness_requirements) (via optional specialisation of [`std::allocator_traits`](https://en.cppreference.com/w/cpp/memory/allocator_traits)), and the actual behaviour during the swap operation. Caveat here: the allocator itself does not know the `swap` operation is ongoing, moreover there is no possiblity to update the internals of the swapped objects from inside the allocator object (but we may return a handle to the last allocated memory region as it was stored in the allocator state upon call to `allocate`).
 
 We want to transfer the current state from one abstraction to the another, thus the designed allocator shall be stateful.
 
@@ -111,7 +111,7 @@ Notice that by performing a heterogeneous `swap` we, in fact, simulate `move` in
 Even if [`pmr`](https://en.cppreference.com/w/cpp/memory/polymorphic_allocator) offers dynamic selection of an allocator, we cannot use it. Consider this note from the reference (emphasis is mine):
 > `polymorphic_allocator` **does not propagate on** container copy assignment, move assignment, or **swap**. As a result, move assignment of a `polymorphic_allocator`-using container can throw, and swapping two `polymorphic_allocator`-using containers whose allocators do not compare equal results in undefined behavior. 
 
-We want to move the state while swapping the data type `T` allocated using `Alloc<T>`. To do so we need to inform `allocator_traits` it is acutally possible through `propagate_on_container_swap` member type.
+We want to move the state while swapping the data of type `T` allocated using `Alloc<T>`. To do so we need to inform `allocator_traits` through `propagate_on_container_swap` member type that it is acutally possible.
 
 ```c++
 template<class T, class BackingT>
@@ -177,13 +177,13 @@ std::vector<
 auto [v1, s1] = swap(s, v);
 ```
 
-Note that, the propagation of an allocator is applicable to the standard homogeneous swap only!
+Propagation of an allocator is applicable to the standard homogeneous swap only!
 
-Unfortunately, that's a the dead end rather than a working solution. Memory management issues come into play, e.g. what if the original items that hold the pointers to the allocated memory try to reclaim it. SBO optimisation in `std::string` completely bypasses the allocator, i.e. this solution may work only for large enough strings. Moreover, depending on the [initialisation scheme](https://en.cppreference.com/w/cpp/language/initialization) invoked we may get the intercepted memory region zeroed.
+Unfortunately, that's a the dead end rather than a working solution. Memory management issues come into play, e.g. what if the original items that hold the pointers to the allocated memory try to reclaim it. SBO optimisation in `std::string` completely bypasses the allocator, i.e. this solution may work only for large enough strings. Moreover, depending on the [initialisation scheme](https://en.cppreference.com/w/cpp/language/initialization) chosen we may get the intercepted memory region zeroed.
 
 ## Alternative
 
-To solve our puzzle we will redefine the problem. Rather than looking for a converter of `T` into `U`, we will search for an  interpreter of a memory region, so that it can be regarded either as `T` or `U`. That is, having a fixed allocated memory region we will apply _views_ that expose bytes within that region to the user through _defined_ abstractions (non-owning). 
+To solve our puzzle we will redefine the problem. Rather than looking for a converter of `T` into `U`, we will search for an  interpreter of a memory region, so that it can be represented either as `T` or `U`. That is, having a fixed allocated memory region we will apply _views_ that expose bytes within that region to the user through _defined_ abstractions (non-owning). 
 
 C++ offers [`std::span`](https://en.cppreference.com/w/cpp/container/span) and [`std::string_view`](https://en.cppreference.com/w/cpp/string/basic_string_view) as a non-owning containers, while [`ranges::to` (P1206R1)](wg21.link/p1206) functionality offers conversion of a range to a container (by means of a structural equivalence). In fact, none of the presented abstractions matches all of our needs. Consider the following `view_as` memory region interpreter:
 
@@ -235,7 +235,7 @@ std::string s = "abcdefghi";
 view_as<std::int16_t, 2> v{s.data(), s.length()};
 ```
 
-By means of `view_as` we can re-interpret the data, and skip selected values in the passed memory region. We are suffering from absence of standard iterator interface, but it is an open point for further improvements.
+By means of `view_as` we can re-interpret the data, and skip selected values in the passed memory region. Currently, we are suffering from absence of standard iterator interface, but it is an open point for further improvements.
 
 Live code is available [on Coliru](http://coliru.stacked-crooked.com/a/08eec2a03ad34417).
 
