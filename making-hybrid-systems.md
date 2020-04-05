@@ -88,8 +88,7 @@ from sut import verify  # warn about unhandled calls (check ZMQ queues)
 
 async def testDrive(uut: Vehicle.Drive
                   , args: Tuple[Vehicle.Drive.Args]
-                  , expected: List[Tuple[Vehicle.Drive.Result
-                                       , Vehicle.Drive.Error]]) -> None
+                  , expected: List[Tuple[Vehicle.Drive.Result, Vehicle.Drive.Error]]) -> None
   req = await uut        # __await__
   assert current(expected)
   assert first(current(expected)) == req
