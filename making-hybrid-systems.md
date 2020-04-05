@@ -154,7 +154,7 @@ interface Vehicle {
 }
 ```
 
-What's left here is the handling of a scoreboard to check whether the expected communication really happens. This may be done by extending the [`AsyncIterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncIterator)  `Vehicle.OnRoad` and [`Awaitable`s](https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable) produced by `Vehicle.Drive` with additional "test context" parameter in enclosing class constructor, and with logic inside the returned awaitable. Reuse of existing test frameworks written in Python is highly desirable.
+What's left here is the handling of a scoreboard to check whether the expected communication really happens. This may be done by extending the [`AsyncIterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncIterator)  `Vehicle.OnRoad` and [`Awaitable`s](https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable) produced by `Vehicle.Drive` with an additional "test context" argument in the enclosing class constructor, and with a logic inside the the returned awaitable. Reuse of existing test frameworks written in Python is highly desirable.
 
 
 #### About this document
