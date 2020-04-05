@@ -81,7 +81,7 @@ We will use [Boost.Python](https://www.boost.org/doc/libs/1_72_0/libs/python/doc
 In the following example session user script receives broadcasts and issues a reply. (Note, pseudocode is used).
 
 ```python
-from typing import Sequence, Tuple
+from typing import Any, Sequence, Tuple
 from sut import verify, ScoreBoard  # warn about unhandled calls (check ZMQ queues)
 
 from sut import Vehicle
