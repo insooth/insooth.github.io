@@ -1,7 +1,7 @@
 
 # Making hybrid systems
 
-In every well-managed software project sooner or later we face cross-system boundaries testing needs, where we basically observe how our software cooperates with the other actors. Those actors include users as well as the other software products. Following article presents an idea of a hybrid system of asynchronous actors running in heterogeneous environment.
+In every well-managed software project sooner or later we face cross-system boundaries testing needs, where we basically observe how our software cooperates with the other actors. Those actors include users as well as the other software products. Following article presents an idea of a hybrid system of asynchronous actors running in a heterogeneous environment.
 
 ## Context
 
