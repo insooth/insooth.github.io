@@ -81,44 +81,48 @@ We will use [Boost.Python](https://www.boost.org/doc/libs/1_72_0/libs/python/doc
 In the following example session user script receives broadcasts and issues a reply. (Note, pseudocode is used).
 
 ```python
-from typing import List, Tuple
+from typing import Sequence, Tuple
+from sut import verify, ScoreBoard  # warn about unhandled calls (check ZMQ queues)
+
 from sut import Vehicle
-from sut import verify  # warn about unhandled calls (check ZMQ queues)
 
-
-async def testDrive(uut: Vehicle.Drive
-                  , args: Tuple[Vehicle.Drive.Args]
-                  , expected: List[Tuple[Vehicle.Drive.Result, Vehicle.Drive.Error]]) -> None:
-  req = await uut        # __await__
-  assert current(expected)
-  assert first(current(expected)) == req
+# React once on request to handle "drive" method. 
+#   Expected = Tuple[Vehicle.Drive.Input, Vehicle.Drive.Error]
+#
+async def testDrive(uut: Vehicle.Drive, reply: Vehicle.Drive.Output, expected: Expected) -> None:
+  assert len(expected) == 2
   
-  err = await uut(args)  # __call__
-  assert second(current(expected)) == err
-  next(expected)
+  req = await uut        # Drive.__await__
+  assert expected[0] == req
+  
+  err = await uut(reply)  # Drive.__call__ 
+  assert expected[1] == err
 
-async def testOnRoad(uut: Vehicle.OnRoad, expected: List[Vehicle.EventData]) -> None:
-  async for msg in uut:  # __anext__
+# Reception of onRoad broadcast.
+async def testOnRoad(uut: Vehicle.OnRoad, expected: Sequence[Vehicle.EventData]) -> None:
+  async for msg in uut:  # OnRoad.__anext__
     assert current(expected)
-    assert current(expected) == msg.event  # __eq__
+    assert current(expected) == msg.event  # Vehicle.EventData.__eq__
     next(expected)
 
-async def testSuite(fixture: Any, cfg: FilePath = "default.ini")
-  await asyncio.gather(
+async def testSuite(fixture: Any)
+  await asyncio.gather( # run in parallel
       testDrive(fixture.uut1, fixture.exp1)
     , testOnRoad(fixture.uut2, fixture.arg2, fixture.exp2)
     )
 
 # ---
 
-uut1 = Vehicle.OnRoad(cfg)
-uut2 = Vehicle.Drive(cfg)
+cfg: FilePath = "default.ini"
+board : ScoreBoard[Any] = ScoreBoard[Vehicle]()
+uut1 = Vehicle.OnRoad(cfg, board)
+uut2 = Vehicle.Drive(cfg, board)
 # ...
-# combine data into a fixture
+# combine data into a "fixture"
 
 asyncio.run(testSuite(fixture))
 
-verify(uut1, uut2)
+assert board.verify(uut1, uut2)
 ```
 
 Corresponding FIDL file:
@@ -150,7 +154,7 @@ interface Vehicle {
 }
 ```
 
-What's left here is a handling of scoreboard to check whether given calls really happen. This may be done by wrapping `assert` into an abstraction that carries such contexts, or by reusing one of the test frameworks written in Python.
+What's left here is the handling of a scoreboard to check whether the expected communication really happens. This may be done by extending the [`AsyncIterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncIterator)  `Vehicle.OnRoad` and [`Awaitable`s](https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable) produced by `Vehicle.Drive` with additional "test context" parameter in enclosing class constructor, and with logic inside the returned awaitable. Reuse of existing test frameworks written in Python is highly desirable.
 
 
 #### About this document
