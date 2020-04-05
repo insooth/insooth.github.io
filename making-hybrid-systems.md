@@ -98,7 +98,7 @@ async def testDrive(uut: Vehicle.Drive
   next(expected)
 
 async def testOnRoad(uut: Vehicle.OnRoad, expected: List[Vehicle.EventData]) -> None:
-  async for msg in uut:
+  async for msg in uut:  # __anext__
     assert current(expected)
     assert current(expected) == msg.event  # __eq__
     next(expected)
@@ -113,15 +113,17 @@ async def testSuite(fixture: Any, cfg: FilePath = "default.ini")
 
 uut1 = Vehicle.OnRoad(cfg)
 uut2 = Vehicle.Drive(cfg)
-...
+# ...
 # combine data into a fixture
+
 asyncio.run(testSuite(fixture))
+
 verify(uut1, uut2)
 ```
 
 Corresponding FIDL file:
 
-```idl
+```franca
 interface Vehicle {
   method drive {
     in {
