@@ -80,7 +80,7 @@ We will use [Boost.Python](https://www.boost.org/doc/libs/1_72_0/libs/python/doc
 
 In the following example session user script receives broadcasts and issues a reply. (Note, pseudocode is used).
 
-```
+```python
 from typing import List, Tuple
 from sut import Vehicle
 from sut import verify  # warn about unhandled calls (check ZMQ queues)
@@ -88,7 +88,7 @@ from sut import verify  # warn about unhandled calls (check ZMQ queues)
 
 async def testDrive(uut: Vehicle.Drive
                   , args: Tuple[Vehicle.Drive.Args]
-                  , expected: List[Tuple[Vehicle.Drive.Result, Vehicle.Drive.Error]]) -> None
+                  , expected: List[Tuple[Vehicle.Drive.Result, Vehicle.Drive.Error]]) -> None:
   req = await uut        # __await__
   assert current(expected)
   assert first(current(expected)) == req
@@ -97,8 +97,7 @@ async def testDrive(uut: Vehicle.Drive
   assert second(current(expected)) == err
   next(expected)
 
-async def testOnRoad(uut: Vehicle.OnRoad
-                   , expected: List[Vehicle.EventData]) -> None:
+async def testOnRoad(uut: Vehicle.OnRoad, expected: List[Vehicle.EventData]) -> None:
   async for msg in uut:
     assert current(expected)
     assert current(expected) == msg.event  # __eq__
@@ -122,7 +121,7 @@ verify(uut1, uut2)
 
 Corresponding FIDL file:
 
-```
+```idl
 interface Vehicle {
   method drive {
     in {
