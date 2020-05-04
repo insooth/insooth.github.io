@@ -271,7 +271,7 @@ void G::make_instance(std::string)
 }
 ```
 
-compile it, and then link against shared library with tested code that has original implementation of the above member function, we will always use mocked one since it was already linked into ou test code.
+compile it, and then link against shared library with tested code that has original implementation of the above member function, we will always use mocked one since it was already linked into our test code.
 
 #### About this document
 
